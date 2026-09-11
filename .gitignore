@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+.env
+data/sample_warehouse.db
+examples/output/
+.venv/
+venv/
