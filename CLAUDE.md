@@ -1,41 +1,78 @@
 # AI Data Analyst — Project Guide
 
-This repo turns Claude Code into an agentic analytics team. A business user asks a
-question in plain English; a lead agent decomposes it, delegates to specialist
-subagents, and returns a plain-English answer backed by a real SQL query and a chart.
+This repo turns Claude Code into a full agentic data team. A business user asks a
+question in plain English; `analyst-lead` decomposes it, routes it to the
+specialist agent that actually owns that kind of work, and returns a plain-English
+answer backed by real SQL, statistics, a model, or a chart.
 
 ## How it fits together
 
-- `.claude/agents/` — subagents for each role on the analytics team (lead analyst,
-  SQL engineer, data visualizer, QA reviewer). Claude Code loads these automatically.
+- `.claude/agents/` — one agent per real team role: `analyst-lead` (orchestrator),
+  `sql-engineer` (queries), `data-scientist` (stats/A-B testing/ML modeling),
+  `ml-platform-engineer` (model registry/drift), `data-platform-engineer`
+  (pipelines/data quality/cloud/system design), `data-visualizer` (BI/dashboard),
+  `ai-engineer` (RAG grounding + agent/skill governance), `qa-reviewer` (per-query
+  QA + test suite/CI). Claude Code loads these automatically.
 - `.claude/skills/` — reusable analysis playbooks (cohort retention, revenue trend,
   funnel analysis, anomaly detection, executive summary formatting). Invoke with
-  `/skill-name` or let the lead agent invoke them.
+  `/skill-name` or let an agent invoke them.
 - `connectors/warehouse.py` — single abstraction for talking to a warehouse. Defaults
   to the local SQLite sample warehouse at `data/sample_warehouse.db`; swap in a real
-  warehouse by setting `DATABASE_URL` (see `.env.example`).
-- `scripts/seed_sample_data.py` — generates the sample warehouse so the whole system
-  works out of the box with no external credentials.
+  warehouse by setting `DATABASE_URL` (see `.env.example` and
+  `docs/cloud-deployment.md`).
+- `scripts/export_raw_sources.py` + `pipelines/etl.py` — the data pipeline that
+  generates raw source extracts and loads/transforms them into the sample
+  warehouse, with `pipelines/data_quality.py` checks on both sides of the
+  transform, so the whole system works out of the box with no external credentials.
+- `stats/`, `experiments/` — significance testing and A/B test readouts, used by
+  `data-scientist`.
+- `ml/` — churn model training, registry, and drift detection, used by
+  `data-scientist` and `ml-platform-engineer`.
+- `dashboard/` — the standing Streamlit app and its published-Artifact companion,
+  owned by `data-visualizer`.
+- `rag/`, `knowledge/metrics_glossary.md` — grounds ambiguous metric definitions,
+  used by `ai-engineer`.
+- `infra/`, `docs/` — illustrative cloud IaC and architecture docs, owned by
+  `data-platform-engineer`. Never applied against a live account from this repo.
+- `tests/`, `.github/workflows/ci.yml` — owned by `qa-reviewer`; run `pytest`
+  after any change to `connectors/`, `pipelines/`, `stats/`, or `ml/`.
 
 ## Ground rules for agents
 
 - **Read-only.** Every query against the warehouse must be `SELECT`. Never emit
   `INSERT`/`UPDATE`/`DELETE`/`DROP`/`ALTER` against `connectors/warehouse.py`.
-- **Show the work.** Always surface the SQL that was run alongside the plain-English
-  answer — a business user should be able to hand the query to a data engineer.
-- **Sanity-check before answering.** Row counts, null rates, and date ranges should be
-  spot-checked (see the `qa-reviewer` agent and `anomaly-detection` skill) before a
-  number is presented as fact.
-- **Cite the table/column names used.** Ambiguity about *which* revenue or *which*
+- **Show the work.** Always surface the SQL, test, or model that produced an
+  answer alongside the plain-English summary — a stakeholder should be able to
+  hand it to a data engineer.
+- **Sanity-check before answering.** Row counts, null rates, and date ranges should
+  be spot-checked (`qa-reviewer`, `anomaly-detection` skill) before a number is
+  presented as fact.
+- **Cite the definition used.** Ambiguity about *which* revenue, churn, or active-
   customer definition was used is the most common way a "correct" query gives a
-  misleading answer.
+  misleading answer — check `knowledge/metrics_glossary.md` via `rag/retrieve.py`
+  when a question uses one of these terms.
+- **Statistical claims need a test, not a glance.** "X is higher than Y" from a
+  significance question should go through `data-scientist`'s
+  `stats/`/`experiments/` modules, with an effect size and confidence interval —
+  not just a raw comparison of two numbers.
+- **Model governance isn't optional.** Every trained model gets registered via
+  `ml/registry.py`; never treat a saved `.joblib` file with no registry entry as
+  production-ready.
+- **Infrastructure changes are proposals, not actions.** `data-platform-engineer`
+  produces Terraform and docs under `infra/`/`docs/` — it never provisions, alters,
+  or tears down real cloud resources from within this repo.
+- **New agent/skill files follow the existing shape.** State when to use it, its
+  process, and its output shape (see `ai-engineer`'s governance notes) — vague
+  instructions produce inconsistent behavior.
 
 ## Local setup
 
 ```bash
 pip install -r requirements.txt
-python scripts/seed_sample_data.py
+python -m scripts.export_raw_sources
+python -m pipelines.etl
+pytest
 ```
 
 Then just ask Claude Code a business question, e.g. "Which customer segment has the
-highest churn in the last two quarters, and is it getting worse?"
+highest churn, and is that difference actually significant or could it be noise?"

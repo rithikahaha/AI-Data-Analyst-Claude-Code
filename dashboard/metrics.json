@@ -1,0 +1,216 @@
+{
+  "generated_at": "2026-09-12T09:20:17.694993+00:00",
+  "revenue": {
+    "months": [
+      "2024-01",
+      "2024-02",
+      "2024-03",
+      "2024-04",
+      "2024-05",
+      "2024-06",
+      "2024-07",
+      "2024-08",
+      "2024-09",
+      "2024-10",
+      "2024-11",
+      "2024-12",
+      "2025-01",
+      "2025-02",
+      "2025-03",
+      "2025-04",
+      "2025-05",
+      "2025-06",
+      "2025-07",
+      "2025-08",
+      "2025-09",
+      "2025-10",
+      "2025-11",
+      "2025-12",
+      "2026-01",
+      "2026-02",
+      "2026-03",
+      "2026-04",
+      "2026-05",
+      "2026-06",
+      "2026-07",
+      "2026-08"
+    ],
+    "values": [
+      1141.06,
+      6684.13,
+      4444.85,
+      8132.59,
+      4523.82,
+      8522.28,
+      15458.17,
+      10667.99,
+      10430.36,
+      13263.87,
+      20728.51,
+      33729.63,
+      30246.58,
+      34428.03,
+      41201.89,
+      38194.55,
+      32313.14,
+      41178.22,
+      47648.52,
+      52811.89,
+      56350.68,
+      73685.73,
+      71638.46,
+      87848.95,
+      99141.24,
+      102200.44,
+      118503.53,
+      125044.31,
+      147408.54,
+      154633.3,
+      204715.98,
+      252104.59
+    ],
+    "mom_growth_pct": 23.1
+  },
+  "churn_by_segment": [
+    {
+      "segment": "SMB",
+      "churned": 103,
+      "total": 241,
+      "churn_rate_pct": 42.7
+    },
+    {
+      "segment": "Mid-Market",
+      "churned": 40,
+      "total": 122,
+      "churn_rate_pct": 32.8
+    },
+    {
+      "segment": "Enterprise",
+      "churned": 2,
+      "total": 50,
+      "churn_rate_pct": 4.0
+    }
+  ],
+  "funnel": [
+    {
+      "event_type": "signup",
+      "customers": 800
+    },
+    {
+      "event_type": "activated",
+      "customers": 617
+    },
+    {
+      "event_type": "first_purchase",
+      "customers": 322
+    }
+  ],
+  "overall_conversion_pct": 40.2,
+  "churn_risk_top": [
+    {
+      "name": "Samantha Robertson",
+      "segment": "Mid-Market",
+      "region": "North America",
+      "plan": "Starter",
+      "churn_risk": 0.8626
+    },
+    {
+      "name": "Eric Clark",
+      "segment": "Mid-Market",
+      "region": "Latin America",
+      "plan": "Starter",
+      "churn_risk": 0.8093
+    },
+    {
+      "name": "John Garcia",
+      "segment": "SMB",
+      "region": "North America",
+      "plan": "Starter",
+      "churn_risk": 0.7899
+    },
+    {
+      "name": "James Conner",
+      "segment": "SMB",
+      "region": "North America",
+      "plan": "Scale",
+      "churn_risk": 0.7746
+    },
+    {
+      "name": "Miguel Parks",
+      "segment": "Mid-Market",
+      "region": "North America",
+      "plan": "Starter",
+      "churn_risk": 0.7619
+    },
+    {
+      "name": "Toni Davis",
+      "segment": "SMB",
+      "region": "North America",
+      "plan": "Growth",
+      "churn_risk": 0.6843
+    },
+    {
+      "name": "Matthew Graves",
+      "segment": "SMB",
+      "region": "APAC",
+      "plan": "Starter",
+      "churn_risk": 0.6644
+    },
+    {
+      "name": "Benjamin Thompson",
+      "segment": "Mid-Market",
+      "region": "APAC",
+      "plan": "Growth",
+      "churn_risk": 0.6586
+    },
+    {
+      "name": "Austin Wheeler",
+      "segment": "SMB",
+      "region": "APAC",
+      "plan": "Starter",
+      "churn_risk": 0.6264
+    },
+    {
+      "name": "Michelle Sanders",
+      "segment": "SMB",
+      "region": "Europe",
+      "plan": "Scale",
+      "churn_risk": 0.6112
+    },
+    {
+      "name": "Austin Santiago",
+      "segment": "SMB",
+      "region": "Latin America",
+      "plan": "Starter",
+      "churn_risk": 0.5791
+    },
+    {
+      "name": "James Bray",
+      "segment": "SMB",
+      "region": "APAC",
+      "plan": "Growth",
+      "churn_risk": 0.5483
+    },
+    {
+      "name": "Craig Morrison",
+      "segment": "Enterprise",
+      "region": "Latin America",
+      "plan": "Scale",
+      "churn_risk": 0.5319
+    },
+    {
+      "name": "Timothy Duncan",
+      "segment": "SMB",
+      "region": "North America",
+      "plan": "Scale",
+      "churn_risk": 0.5278
+    },
+    {
+      "name": "David Hall",
+      "segment": "SMB",
+      "region": "Latin America",
+      "plan": "Growth",
+      "churn_risk": 0.5188
+    }
+  ]
+}

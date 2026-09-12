@@ -1,22 +1,27 @@
-"""Generate a realistic sample warehouse so the agents/skills work out of the box.
+"""Simulate raw extracts from the business's source systems: a CRM export
+(customers), a catalog export (products), an order-system export
+(orders/order_items), a billing-system export (subscriptions), and a product
+analytics export (events).
 
-Models a small subscription e-commerce business over ~2 years: customers, products,
-orders/order_items, subscriptions (for churn/retention), and a signup->activation->
-purchase funnel (as events) — enough breadth to exercise every skill in
-.claude/skills/ without needing a real warehouse connection.
+Writes to data/raw/*.csv — deliberately un-transformed and slightly messy (a
+handful of duplicate customer rows, as a re-exported CRM extract would produce;
+order totals left uncomputed, as the order system tracks line items, not
+totals) so pipelines/etl.py has real transform and data-quality work to do,
+not just a pass-through load.
 """
 
 import random
-import sqlite3
 from datetime import date, timedelta
 from pathlib import Path
 
+import pandas as pd
 from faker import Faker
 
-DB_PATH = Path(__file__).resolve().parent.parent / "data" / "sample_warehouse.db"
+RAW_DIR = Path(__file__).resolve().parent.parent / "data" / "raw"
 START_DATE = date(2024, 1, 1)
 END_DATE = date(2026, 9, 1)
 N_CUSTOMERS = 800
+DUPLICATE_CUSTOMER_ROWS = 12  # simulates a CRM re-export overlap
 
 fake = Faker()
 Faker.seed(42)
@@ -32,69 +37,7 @@ def random_date(start: date, end: date) -> date:
     return start + timedelta(days=random.randint(0, (end - start).days))
 
 
-def build_schema(conn: sqlite3.Connection) -> None:
-    conn.executescript(
-        """
-        DROP TABLE IF EXISTS customers;
-        DROP TABLE IF EXISTS products;
-        DROP TABLE IF EXISTS orders;
-        DROP TABLE IF EXISTS order_items;
-        DROP TABLE IF EXISTS subscriptions;
-        DROP TABLE IF EXISTS events;
-
-        CREATE TABLE customers (
-            id INTEGER PRIMARY KEY,
-            name TEXT,
-            email TEXT,
-            signup_date TEXT,
-            region TEXT,
-            segment TEXT
-        );
-
-        CREATE TABLE products (
-            id INTEGER PRIMARY KEY,
-            name TEXT,
-            category TEXT,
-            price REAL
-        );
-
-        CREATE TABLE orders (
-            id INTEGER PRIMARY KEY,
-            customer_id INTEGER REFERENCES customers(id),
-            order_date TEXT,
-            status TEXT,
-            total_amount REAL
-        );
-
-        CREATE TABLE order_items (
-            id INTEGER PRIMARY KEY,
-            order_id INTEGER REFERENCES orders(id),
-            product_id INTEGER REFERENCES products(id),
-            quantity INTEGER,
-            unit_price REAL
-        );
-
-        CREATE TABLE subscriptions (
-            id INTEGER PRIMARY KEY,
-            customer_id INTEGER REFERENCES customers(id),
-            plan TEXT,
-            monthly_price REAL,
-            start_date TEXT,
-            end_date TEXT,
-            status TEXT
-        );
-
-        CREATE TABLE events (
-            id INTEGER PRIMARY KEY,
-            customer_id INTEGER REFERENCES customers(id),
-            event_type TEXT,
-            event_date TEXT
-        );
-        """
-    )
-
-
-def seed_customers(conn: sqlite3.Connection) -> list[dict]:
+def export_customers() -> list[dict]:
     customers = []
     for i in range(1, N_CUSTOMERS + 1):
         signup = random_date(START_DATE, END_DATE - timedelta(days=1))
@@ -108,14 +51,18 @@ def seed_customers(conn: sqlite3.Connection) -> list[dict]:
                 "segment": random.choices(SEGMENTS, weights=[0.6, 0.3, 0.1])[0],
             }
         )
-    conn.executemany(
-        "INSERT INTO customers VALUES (:id, :name, :email, :signup_date, :region, :segment)",
-        customers,
-    )
-    return customers
+
+    # A source-system re-export overlap: a handful of customers appear twice,
+    # exactly as a CRM incremental export re-sending recently-touched records
+    # alongside a full backfill would look.
+    duplicates = random.sample(customers, k=DUPLICATE_CUSTOMER_ROWS)
+    all_rows = customers + duplicates
+
+    pd.DataFrame(all_rows).to_csv(RAW_DIR / "customers.csv", index=False)
+    return customers  # de-duplicated list for downstream generation
 
 
-def seed_products(conn: sqlite3.Connection) -> list[dict]:
+def export_products() -> list[dict]:
     products = []
     pid = 1
     for category in CATEGORIES:
@@ -129,20 +76,17 @@ def seed_products(conn: sqlite3.Connection) -> list[dict]:
                 }
             )
             pid += 1
-    conn.executemany(
-        "INSERT INTO products VALUES (:id, :name, :category, :price)", products
-    )
+    pd.DataFrame(products).to_csv(RAW_DIR / "products.csv", index=False)
     return products
 
 
-def seed_funnel_events(conn: sqlite3.Connection, customers: list[dict]) -> None:
+def export_events(customers: list[dict]) -> None:
     events = []
     eid = 1
     for c in customers:
         signup = date.fromisoformat(c["signup_date"])
         events.append({"id": eid, "customer_id": c["id"], "event_type": "signup", "event_date": signup.isoformat()})
         eid += 1
-        # Not everyone activates, and not everyone who activates buys.
         if random.random() < 0.75:
             activated = signup + timedelta(days=random.randint(0, 14))
             if activated <= END_DATE:
@@ -153,12 +97,15 @@ def seed_funnel_events(conn: sqlite3.Connection, customers: list[dict]) -> None:
                     if purchased <= END_DATE:
                         events.append({"id": eid, "customer_id": c["id"], "event_type": "first_purchase", "event_date": purchased.isoformat()})
                         eid += 1
-    conn.executemany(
-        "INSERT INTO events VALUES (:id, :customer_id, :event_type, :event_date)", events
-    )
+    pd.DataFrame(events).to_csv(RAW_DIR / "events.csv", index=False)
 
 
-def seed_orders(conn: sqlite3.Connection, customers: list[dict], products: list[dict]) -> None:
+def export_orders(customers: list[dict], products: list[dict]) -> None:
+    """The order system exports orders (header) and order_items (line items)
+    separately — total_amount is not a column here, it's derived downstream in
+    the transform step from the line items, the way it actually works in most
+    order-management systems.
+    """
     orders = []
     order_items = []
     oid = 1
@@ -166,7 +113,7 @@ def seed_orders(conn: sqlite3.Connection, customers: list[dict], products: list[
     for c in customers:
         signup = date.fromisoformat(c["signup_date"])
         if random.random() >= 0.55:
-            continue  # matches the "first_purchase" funnel drop-off above
+            continue
         n_orders = random.randint(1, 12)
         for _ in range(n_orders):
             order_date = random_date(signup, END_DATE)
@@ -174,7 +121,6 @@ def seed_orders(conn: sqlite3.Connection, customers: list[dict], products: list[
                 ["completed", "refunded", "cancelled"], weights=[0.9, 0.06, 0.04]
             )[0]
             chosen_products = random.sample(products, k=random.randint(1, 3))
-            total = 0.0
             for p in chosen_products:
                 qty = random.randint(1, 4)
                 order_items.append(
@@ -186,7 +132,6 @@ def seed_orders(conn: sqlite3.Connection, customers: list[dict], products: list[
                         "unit_price": p["price"],
                     }
                 )
-                total += qty * p["price"]
                 item_id += 1
             orders.append(
                 {
@@ -194,21 +139,14 @@ def seed_orders(conn: sqlite3.Connection, customers: list[dict], products: list[
                     "customer_id": c["id"],
                     "order_date": order_date.isoformat(),
                     "status": status,
-                    "total_amount": round(total, 2),
                 }
             )
             oid += 1
-    conn.executemany(
-        "INSERT INTO orders VALUES (:id, :customer_id, :order_date, :status, :total_amount)",
-        orders,
-    )
-    conn.executemany(
-        "INSERT INTO order_items VALUES (:id, :order_id, :product_id, :quantity, :unit_price)",
-        order_items,
-    )
+    pd.DataFrame(orders).to_csv(RAW_DIR / "orders.csv", index=False)
+    pd.DataFrame(order_items).to_csv(RAW_DIR / "order_items.csv", index=False)
 
 
-def seed_subscriptions(conn: sqlite3.Connection, customers: list[dict]) -> None:
+def export_subscriptions(customers: list[dict]) -> None:
     subs = []
     sid = 1
     for c in customers:
@@ -217,7 +155,6 @@ def seed_subscriptions(conn: sqlite3.Connection, customers: list[dict]) -> None:
         signup = date.fromisoformat(c["signup_date"])
         plan_name, plan_price = random.choice(PLANS)
         start = signup + timedelta(days=random.randint(0, 10))
-        # Segment-weighted churn: Enterprise churns least, SMB churns most.
         churn_prob = {"SMB": 0.5, "Mid-Market": 0.3, "Enterprise": 0.12}[c["segment"]]
         churned = random.random() < churn_prob
         end = None
@@ -242,28 +179,17 @@ def seed_subscriptions(conn: sqlite3.Connection, customers: list[dict]) -> None:
             }
         )
         sid += 1
-    conn.executemany(
-        "INSERT INTO subscriptions VALUES (:id, :customer_id, :plan, :monthly_price, :start_date, :end_date, :status)",
-        subs,
-    )
+    pd.DataFrame(subs).to_csv(RAW_DIR / "subscriptions.csv", index=False)
 
 
 def main() -> None:
-    DB_PATH.parent.mkdir(exist_ok=True)
-    if DB_PATH.exists():
-        DB_PATH.unlink()
-    conn = sqlite3.connect(DB_PATH)
-    try:
-        build_schema(conn)
-        customers = seed_customers(conn)
-        products = seed_products(conn)
-        seed_funnel_events(conn, customers)
-        seed_orders(conn, customers, products)
-        seed_subscriptions(conn, customers)
-        conn.commit()
-    finally:
-        conn.close()
-    print(f"Seeded sample warehouse at {DB_PATH}")
+    RAW_DIR.mkdir(parents=True, exist_ok=True)
+    customers = export_customers()
+    products = export_products()
+    export_events(customers)
+    export_orders(customers, products)
+    export_subscriptions(customers)
+    print(f"Exported raw source extracts to {RAW_DIR}")
 
 
 if __name__ == "__main__":

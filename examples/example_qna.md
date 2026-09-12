@@ -1,7 +1,8 @@
 # Example session
 
-This is a real run against the seeded sample warehouse (`scripts/seed_sample_data.py`),
-using the `analyst-lead` agent and `revenue-trend-analysis` skill.
+This is a real run against the warehouse produced by the
+`scripts/export_raw_sources.py` → `pipelines/etl.py` pipeline, using the
+`analyst-lead` agent and `revenue-trend-analysis` skill.
 
 ## Question
 
@@ -10,23 +11,23 @@ using the `analyst-lead` agent and `revenue-trend-analysis` skill.
 
 ## Answer
 
-**Revenue grew 20.7% month-over-month in August 2026, the fastest growth rate in the
-last six months** — growth has been accelerating each month since May, not slowing.
+**Revenue grew 23.1% month-over-month in August 2026, the fastest growth rate in the
+last six months** — growth has been accelerating each month since April, not slowing.
 
-**Why it matters:** this isn't a one-off spike; the acceleration has held for three
-consecutive months (May → Aug), which is worth understanding before planning
+**Why it matters:** this isn't a one-off spike; the acceleration has held for four
+consecutive months (April → Aug), which is worth understanding before planning
 capacity/hiring against a flatter forecast.
 
 **Evidence:**
 
 | Month | Revenue |
 |---|---|
-| 2026-03 | $113,786.59 |
-| 2026-04 | $122,888.85 |
-| 2026-05 | $142,171.00 |
-| 2026-06 | $146,909.05 |
-| 2026-07 | $198,459.89 |
-| 2026-08 | $239,492.46 |
+| 2026-03 | $118,503.53 |
+| 2026-04 | $125,044.31 |
+| 2026-05 | $147,408.54 |
+| 2026-06 | $154,633.30 |
+| 2026-07 | $204,715.98 |
+| 2026-08 | $252,104.59 |
 
 ![Monthly revenue trend](output/revenue_trend.png)
 

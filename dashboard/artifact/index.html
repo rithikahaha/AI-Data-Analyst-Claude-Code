@@ -1,0 +1,354 @@
+<title>Subscription Health Dashboard</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+  :root{
+    --surface:#F4F6F5;
+    --surface-raised:#FFFFFF;
+    --ink:#10201D;
+    --ink-muted:#55645F;
+    --border:#DCE3E0;
+    --accent:#0E7C86;
+    --accent-strong:#0B5F67;
+    --accent-tint:#E1F1F1;
+    --good:#1E7A46; --good-tint:#E3F3EA;
+    --warning:#9A5B00; --warning-tint:#FBEEDD;
+    --critical:#B42318; --critical-tint:#FBE7E4;
+    --ramp-1:#BFE3E3; --ramp-2:#5FA9AC; --ramp-3:#0E7C86;
+    --shadow: 0 1px 2px rgba(16,32,29,0.06), 0 1px 1px rgba(16,32,29,0.04);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --surface:#0D1513;
+      --surface-raised:#131E1B;
+      --ink:#E7F1EE;
+      --ink-muted:#92A29D;
+      --border:#253430;
+      --accent:#4FD1CE;
+      --accent-strong:#7FE0DD;
+      --accent-tint:rgba(79,209,206,0.14);
+      --good:#4ADE80; --good-tint:rgba(74,222,128,0.14);
+      --warning:#E3A548; --warning-tint:rgba(227,165,72,0.14);
+      --critical:#F2837A; --critical-tint:rgba(242,131,122,0.16);
+      --ramp-1:#1E4F4E; --ramp-2:#3C8E8C; --ramp-3:#4FD1CE;
+      --shadow: 0 1px 2px rgba(0,0,0,0.35), 0 1px 1px rgba(0,0,0,0.2);
+    }
+  }
+  :root[data-theme="dark"]{
+    --surface:#0D1513;
+    --surface-raised:#131E1B;
+    --ink:#E7F1EE;
+    --ink-muted:#92A29D;
+    --border:#253430;
+    --accent:#4FD1CE;
+    --accent-strong:#7FE0DD;
+    --accent-tint:rgba(79,209,206,0.14);
+    --good:#4ADE80; --good-tint:rgba(74,222,128,0.14);
+    --warning:#E3A548; --warning-tint:rgba(227,165,72,0.14);
+    --critical:#F2837A; --critical-tint:rgba(242,131,122,0.16);
+    --ramp-1:#1E4F4E; --ramp-2:#3C8E8C; --ramp-3:#4FD1CE;
+    --shadow: 0 1px 2px rgba(0,0,0,0.35), 0 1px 1px rgba(0,0,0,0.2);
+  }
+
+  *{box-sizing:border-box;}
+  body{
+    background:var(--surface);
+    color:var(--ink);
+    font-family:"IBM Plex Sans", -apple-system, "Segoe UI", sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .num{ font-family:"IBM Plex Mono", ui-monospace, Menlo, monospace; font-variant-numeric:tabular-nums; }
+
+  .page{ max-width:1180px; margin:0 auto; padding:28px 24px 64px; }
+
+  header{
+    display:flex; justify-content:space-between; align-items:flex-end;
+    gap:16px; flex-wrap:wrap;
+    padding-bottom:18px; margin-bottom:22px;
+    border-bottom:1px solid var(--border);
+  }
+  .eyebrow{
+    font-family:"IBM Plex Mono", monospace; font-size:11.5px; letter-spacing:0.09em;
+    text-transform:uppercase; color:var(--accent); margin:0 0 6px;
+  }
+  h1{ font-size:26px; font-weight:700; margin:0; text-wrap:balance; letter-spacing:-0.01em; }
+  .meta{ color:var(--ink-muted); font-size:13px; text-align:right; line-height:1.5; }
+  .meta .num{ color:var(--ink); }
+
+  .kpi-row{ display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:20px; }
+  .kpi{
+    background:var(--surface-raised); border:1px solid var(--border); border-radius:10px;
+    padding:16px 18px; box-shadow:var(--shadow);
+  }
+  .kpi-label{ font-size:12px; color:var(--ink-muted); margin-bottom:8px; }
+  .kpi-value{ font-size:26px; font-weight:600; letter-spacing:-0.01em; }
+  .kpi-sub{ font-size:12.5px; color:var(--ink-muted); margin-top:4px; }
+  .kpi-value.up{ color:var(--good); } .kpi-value.down{ color:var(--critical); }
+
+  .grid-2{ display:grid; grid-template-columns:1.4fr 1fr; gap:14px; margin-bottom:14px; }
+  @media (max-width:820px){ .grid-2, .kpi-row{ grid-template-columns:1fr 1fr; } }
+
+  .card{
+    background:var(--surface-raised); border:1px solid var(--border); border-radius:10px;
+    padding:18px 20px 16px; box-shadow:var(--shadow);
+  }
+  .card h2{ font-size:14.5px; font-weight:600; margin:0 0 2px; }
+  .card .card-sub{ font-size:12.5px; color:var(--ink-muted); margin:0 0 14px; }
+
+  .chart-wrap{ position:relative; }
+  svg text{ fill:var(--ink-muted); font-family:"IBM Plex Mono", monospace; font-size:10.5px; }
+  svg .axis-line{ stroke:var(--border); stroke-width:1; }
+  .revenue-line{ fill:none; stroke:var(--accent); stroke-width:2; }
+  .revenue-area{ fill:var(--accent-tint); }
+  .revenue-dot{ fill:var(--accent); stroke:var(--surface-raised); stroke-width:2; }
+  .bar-funnel{ fill:var(--accent); }
+  .bar-label{ fill:var(--ink); font-weight:600; font-size:11.5px; }
+  .stage-label{ fill:var(--ink-muted); }
+
+  #tooltip{
+    position:absolute; pointer-events:none; opacity:0; transition:opacity 0.1s;
+    background:var(--ink); color:var(--surface); font-family:"IBM Plex Mono", monospace;
+    font-size:11.5px; padding:6px 9px; border-radius:6px; white-space:nowrap; z-index:5;
+    box-shadow:0 4px 10px rgba(0,0,0,0.2);
+  }
+  :root[data-theme="dark"] #tooltip, @media (prefers-color-scheme:dark){ #tooltip{ } }
+
+  table{ width:100%; border-collapse:collapse; font-size:13px; }
+  thead th{
+    text-align:left; font-size:11px; text-transform:uppercase; letter-spacing:0.05em;
+    color:var(--ink-muted); font-weight:600; padding:0 10px 8px; border-bottom:1px solid var(--border);
+  }
+  tbody td{ padding:9px 10px; border-bottom:1px solid var(--border); }
+  tbody tr:last-child td{ border-bottom:none; }
+  td.num, th.num{ text-align:right; }
+
+  .pill{
+    display:inline-flex; align-items:center; gap:5px; padding:3px 9px 3px 7px;
+    border-radius:100px; font-size:11.5px; font-weight:600; white-space:nowrap;
+  }
+  .pill svg{ width:9px; height:9px; }
+  .pill-critical{ background:var(--critical-tint); color:var(--critical); }
+  .pill-warning{ background:var(--warning-tint); color:var(--warning); }
+  .pill-good{ background:var(--good-tint); color:var(--good); }
+
+  .table-scroll{ overflow-x:auto; }
+  .segment-bars{ display:flex; flex-direction:column; gap:10px; margin-top:4px; }
+  .segment-row{ display:grid; grid-template-columns:100px 1fr 56px; align-items:center; gap:10px; font-size:12.5px; }
+  .segment-track{ background:var(--border); border-radius:5px; height:10px; overflow:hidden; }
+  .segment-fill{ height:100%; border-radius:5px; }
+
+  footer{ margin-top:28px; color:var(--ink-muted); font-size:12px; text-align:center; }
+  footer a{ color:var(--accent); }
+</style>
+
+<div class="page">
+  <header>
+    <div>
+      <p class="eyebrow">AI Data Analyst &middot; BI Developer</p>
+      <h1>Subscription Health Dashboard</h1>
+    </div>
+    <div class="meta">
+      Snapshot generated <span class="num" id="generated-at">—</span><br>
+      Source: sample warehouse via <span class="num">connectors/warehouse.py</span>
+    </div>
+  </header>
+
+  <div class="kpi-row" id="kpi-row"></div>
+
+  <div class="grid-2">
+    <div class="card">
+      <h2>Monthly revenue</h2>
+      <p class="card-sub">Completed order revenue, trailing 12 full months</p>
+      <div class="chart-wrap">
+        <svg id="revenue-chart" viewBox="0 0 620 220" width="100%" preserveAspectRatio="xMidYMid meet"></svg>
+        <div id="tooltip"></div>
+      </div>
+    </div>
+    <div class="card">
+      <h2>Signup &rarr; activation &rarr; purchase</h2>
+      <p class="card-sub">Customers reaching each funnel stage</p>
+      <svg id="funnel-chart" viewBox="0 0 400 220" width="100%" preserveAspectRatio="xMidYMid meet"></svg>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <h2>Highest churn-risk active subscriptions</h2>
+      <p class="card-sub">Scored by <span class="num">ml/train_churn_model.py</span> (gradient-boosted classifier)</p>
+      <div class="table-scroll">
+        <table>
+          <thead><tr>
+            <th>Customer</th><th>Segment</th><th>Region</th><th>Plan</th><th class="num">Risk</th>
+          </tr></thead>
+          <tbody id="risk-table-body"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="card">
+      <h2>Churn rate by segment</h2>
+      <p class="card-sub">Share of subscriptions with status = churned</p>
+      <div class="segment-bars" id="segment-bars"></div>
+    </div>
+  </div>
+
+  <footer>
+    Static snapshot for sharing — for live queries, run <span class="num">streamlit run dashboard/app.py</span>.
+  </footer>
+</div>
+
+<script>
+async function main(){
+  const res = await fetch('metrics.json');
+  const data = await res.json();
+
+  document.getElementById('generated-at').textContent =
+    new Date(data.generated_at).toISOString().slice(0,16).replace('T',' ') + ' UTC';
+
+  renderKPIs(data);
+  renderRevenueChart(data.revenue);
+  renderFunnelChart(data.funnel);
+  renderSegmentBars(data.churn_by_segment);
+  renderRiskTable(data.churn_risk_top);
+}
+
+function riskTier(score){
+  if (score >= 0.6) return {cls:'pill-critical', label:'High'};
+  if (score >= 0.35) return {cls:'pill-warning', label:'Medium'};
+  return {cls:'pill-good', label:'Low'};
+}
+
+function renderKPIs(data){
+  const mom = data.revenue.mom_growth_pct;
+  const worstSegment = [...data.churn_by_segment].sort((a,b)=>b.churn_rate_pct-a.churn_rate_pct)[0];
+  const highRiskCount = data.churn_risk_top.filter(r => r.churn_risk >= 0.6).length;
+  const latestRevenue = data.revenue.values[data.revenue.values.length - 1];
+
+  const kpis = [
+    { label:'Latest month revenue', value: '$' + latestRevenue.toLocaleString(undefined,{maximumFractionDigits:0}), sub: data.revenue.months[data.revenue.months.length-1] },
+    { label:'Month-over-month growth', value: (mom>=0?'+':'') + mom + '%', sub:'vs. prior month', cls: mom>=0?'up':'down' },
+    { label:'Highest churn segment', value: worstSegment.segment, sub: worstSegment.churn_rate_pct + '% churned' },
+    { label:'High-risk active subs', value: highRiskCount + ' of ' + data.churn_risk_top.length + ' shown', sub:'risk score ≥ 0.60' },
+  ];
+
+  document.getElementById('kpi-row').innerHTML = kpis.map(k => `
+    <div class="kpi">
+      <div class="kpi-label">${k.label}</div>
+      <div class="kpi-value num ${k.cls||''}">${k.value}</div>
+      <div class="kpi-sub">${k.sub}</div>
+    </div>
+  `).join('');
+}
+
+function renderRevenueChart(revenue){
+  const svg = document.getElementById('revenue-chart');
+  const W = 620, H = 220, padL = 44, padR = 12, padT = 14, padB = 26;
+  const months = revenue.months, values = revenue.values;
+  const max = Math.max(...values), min = 0;
+  const x = i => padL + (i/(months.length-1)) * (W-padL-padR);
+  const y = v => padT + (1 - (v-min)/(max-min)) * (H-padT-padB);
+
+  let gridlines = '', ticks = '';
+  const steps = 4;
+  for(let s=0; s<=steps; s++){
+    const val = max * s/steps;
+    const yy = y(val);
+    gridlines += `<line class="axis-line" x1="${padL}" y1="${yy}" x2="${W-padR}" y2="${yy}"/>`;
+    ticks += `<text x="${padL-8}" y="${yy+3}" text-anchor="end">$${Math.round(val/1000)}k</text>`;
+  }
+
+  let labelIdx = [];
+  const labelEvery = Math.ceil(months.length/6);
+  for(let i=0;i<months.length;i+=labelEvery) labelIdx.push(i);
+  let xLabels = labelIdx.map(i => `<text x="${x(i)}" y="${H-6}" text-anchor="middle">${months[i].slice(2)}</text>`).join('');
+
+  const linePoints = values.map((v,i)=>`${x(i)},${y(v)}`).join(' ');
+  const areaPoints = `${x(0)},${y(0)} ` + linePoints + ` ${x(values.length-1)},${y(0)}`;
+  const lastI = values.length-1;
+
+  const dots = values.map((v,i)=> `<circle class="revenue-dot" data-i="${i}" cx="${x(i)}" cy="${y(v)}" r="${i===lastI?4:0}" />`).join('');
+  const hitAreas = values.map((v,i)=> `<rect class="hit" data-i="${i}" x="${x(i)-((W-padL-padR)/(months.length-1))/2}" y="${padT}" width="${(W-padL-padR)/(months.length-1)}" height="${H-padT-padB}" fill="transparent"/>`).join('');
+
+  svg.innerHTML = `
+    ${gridlines}${ticks}
+    <polygon class="revenue-area" points="${areaPoints}"/>
+    <polyline class="revenue-line" points="${linePoints}"/>
+    ${dots}
+    ${xLabels}
+    ${hitAreas}
+  `;
+
+  const tooltip = document.getElementById('tooltip');
+  svg.querySelectorAll('.hit').forEach(el=>{
+    el.addEventListener('mousemove', (e)=>{
+      const i = +el.dataset.i;
+      svg.querySelectorAll('.revenue-dot').forEach(d=> d.setAttribute('r', +d.dataset.i===i ? 4.5 : 0));
+      const rect = svg.getBoundingClientRect();
+      tooltip.style.opacity = 1;
+      tooltip.style.left = (rect.width * (x(i)/W)) + 'px';
+      tooltip.style.top = (rect.height * (y(values[i])/H) - 34) + 'px';
+      tooltip.textContent = `${months[i]}: $${values[i].toLocaleString(undefined,{maximumFractionDigits:0})}`;
+    });
+    el.addEventListener('mouseleave', ()=>{
+      tooltip.style.opacity = 0;
+      svg.querySelectorAll('.revenue-dot').forEach(d=> d.setAttribute('r', +d.dataset.i===lastI ? 4 : 0));
+    });
+  });
+}
+
+function renderFunnelChart(funnel){
+  const svg = document.getElementById('funnel-chart');
+  const W = 400, H = 220, padT = 14, padB = 30, gap = 16;
+  const max = funnel[0].customers;
+  const barW = (W - gap*(funnel.length-1)) / funnel.length;
+  const scaleH = H - padT - padB;
+
+  let bars = '';
+  funnel.forEach((f, i) => {
+    const h = (f.customers/max) * scaleH;
+    const xPos = i*(barW+gap);
+    const yPos = padT + (scaleH - h);
+    bars += `
+      <rect class="bar-funnel" x="${xPos}" y="${yPos}" width="${barW}" height="${h}" rx="3"/>
+      <text class="bar-label" x="${xPos+barW/2}" y="${yPos-8}" text-anchor="middle">${f.customers}</text>
+      <text class="stage-label" x="${xPos+barW/2}" y="${H-10}" text-anchor="middle">${f.event_type.replace('_',' ')}</text>
+    `;
+  });
+
+  svg.innerHTML = bars;
+}
+
+function renderSegmentBars(segments){
+  const sorted = [...segments].sort((a,b)=>b.churn_rate_pct-a.churn_rate_pct);
+  const max = Math.max(...sorted.map(s=>s.churn_rate_pct));
+  const ramps = ['var(--ramp-3)','var(--ramp-2)','var(--ramp-1)'];
+
+  document.getElementById('segment-bars').innerHTML = sorted.map((s,i) => `
+    <div class="segment-row">
+      <span>${s.segment}</span>
+      <div class="segment-track"><div class="segment-fill" style="width:${(s.churn_rate_pct/max*100).toFixed(0)}%; background:${ramps[i]||ramps[ramps.length-1]}"></div></div>
+      <span class="num" style="text-align:right">${s.churn_rate_pct}%</span>
+    </div>
+  `).join('');
+}
+
+function renderRiskTable(rows){
+  document.getElementById('risk-table-body').innerHTML = rows.map(r => {
+    const tier = riskTier(r.churn_risk);
+    return `
+      <tr>
+        <td>${r.name}</td>
+        <td>${r.segment}</td>
+        <td>${r.region}</td>
+        <td>${r.plan}</td>
+        <td class="num">
+          <span class="pill ${tier.cls}">
+            <svg viewBox="0 0 8 8"><circle cx="4" cy="4" r="4" fill="currentColor"/></svg>
+            ${tier.label} · ${r.churn_risk.toFixed(2)}
+          </span>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+main();
+</script>

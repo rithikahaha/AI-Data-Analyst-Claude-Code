@@ -1,6 +1,10 @@
 __pycache__/
 *.pyc
+.pytest_cache/
 .env
 data/sample_warehouse.db
+data/raw/
+ml/models/*.joblib
+ml/models/*.json
 .venv/
 venv/
