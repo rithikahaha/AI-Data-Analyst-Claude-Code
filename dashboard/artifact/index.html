@@ -83,6 +83,8 @@
   .kpi-value{ font-size:26px; font-weight:600; letter-spacing:-0.01em; }
   .kpi-sub{ font-size:12.5px; color:var(--ink-muted); margin-top:4px; }
   .kpi-value.up{ color:var(--good); } .kpi-value.down{ color:var(--critical); }
+  .kpi-note{ font-size:12.5px; color:var(--ink-muted); margin:-8px 0 20px; line-height:1.6; }
+  .kpi-note strong{ color:var(--ink); font-weight:600; }
 
   .grid-2{ display:grid; grid-template-columns:1.4fr 1fr; gap:14px; margin-bottom:14px; }
   @media (max-width:820px){ .grid-2, .kpi-row{ grid-template-columns:1fr 1fr; } }
@@ -153,11 +155,19 @@
   </header>
 
   <div class="kpi-row" id="kpi-row"></div>
+  <p class="kpi-note">
+    <strong>Weekly active users</strong>: how many different people actually used the
+    product that week. A rising number means people keep coming back.
+    <strong>Revenue Health (NRR)</strong>: whether customers we already have are
+    spending more or less over time. Above 100% means existing customers are
+    upgrading faster than others cancel, growth without needing a single new
+    customer.
+  </p>
 
   <div class="grid-2">
     <div class="card">
       <h2>Weekly active users</h2>
-      <p class="card-sub">Distinct users with a login event, trailing 26 weeks</p>
+      <p class="card-sub">How many different people used the product each week, trailing 26 weeks</p>
       <div class="chart-wrap">
         <svg id="wau-chart" viewBox="0 0 620 220" width="100%" preserveAspectRatio="xMidYMid meet"></svg>
         <div id="tooltip"></div>
@@ -172,8 +182,8 @@
 
   <div class="grid-2">
     <div class="card">
-      <h2>Highest churn-risk active accounts</h2>
-      <p class="card-sub">Scored by <span class="num">ml/train_churn_model.py</span> (gradient-boosted classifier)</p>
+      <h2>Accounts most likely to cancel</h2>
+      <p class="card-sub">Ranked by a prediction model trained on how much each account actually uses the product</p>
       <div class="table-scroll">
         <table>
           <thead><tr>
@@ -223,10 +233,10 @@ function renderKPIs(data){
   const latestWau = data.wau.values[data.wau.values.length - 1];
 
   const kpis = [
-    { label:'Weekly active users', value: latestWau.toLocaleString(), sub: 'week ' + data.wau.weeks[data.wau.weeks.length-1] },
+    { label:'People using it this week', value: latestWau.toLocaleString(), sub: 'week ' + data.wau.weeks[data.wau.weeks.length-1] },
     { label:'Week-over-week change', value: (wow>=0?'+':'') + wow + '%', sub:'vs. prior week', cls: wow>=0?'up':'down' },
-    { label:'Net revenue retention', value: data.nrr.nrr_pct + '%', sub: data.nrr.nrr_pct >= 100 ? 'expansion outpacing churn' : 'shrinking base' },
-    { label:'High-risk active accounts', value: highRiskCount + ' of ' + data.account_risk_top.length + ' shown', sub:'risk score ≥ 0.60' },
+    { label:'Revenue Health (NRR)', value: data.nrr.nrr_pct + '%', sub: data.nrr.nrr_pct >= 100 ? 'Healthy: growing without new customers' : 'Warning: shrinking existing revenue' },
+    { label:'Accounts needing attention', value: highRiskCount + ' of ' + data.account_risk_top.length + ' shown', sub:'high churn-risk score' },
   ];
 
   document.getElementById('kpi-row').innerHTML = kpis.map(k => `
