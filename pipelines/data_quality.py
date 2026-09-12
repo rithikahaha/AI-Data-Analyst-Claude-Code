@@ -1,7 +1,7 @@
 """Reusable data-quality checks for data-platform-engineer's pipeline.
 
 Generic, dataframe-in / report-out checks so the same functions run against raw
-extracts before transform and against warehouse tables after load — a pipeline
+extracts before transform and against warehouse tables after load, a pipeline
 that only validates on one side of the transform can let a bug in the transform
 itself go uncaught.
 """

@@ -1,7 +1,7 @@
 """Statistical significance testing helpers for the data-scientist agent.
 
 Each function returns a plain dict with the effect size and confidence interval
-alongside the p-value — a p-value alone doesn't tell a stakeholder whether an
+alongside the p-value, a p-value alone doesn't tell a stakeholder whether an
 effect is big enough to matter.
 """
 
@@ -74,7 +74,7 @@ def chi_square_test(contingency_table: np.ndarray) -> TestResult:
 
 
 def proportion_confidence_interval(successes: int, n: int, confidence: float = 0.95) -> tuple[float, float]:
-    """Wilson score interval — more reliable than the normal approximation for
+    """Wilson score interval, more reliable than the normal approximation for
     small samples or proportions near 0/1."""
     if n == 0:
         return (float("nan"), float("nan"))

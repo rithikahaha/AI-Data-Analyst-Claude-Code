@@ -1,5 +1,5 @@
 -- Same feature definition as ml/features.py's build_feature_frame(), expressed
--- as a governed dbt model instead of inline Python/SQL — the point of a
+-- as a governed dbt model instead of inline Python/SQL, the point of a
 -- semantic layer: "distinct_feature_types_used" means the same thing whether
 -- a data scientist, a BI dashboard, or an agent queries it.
 with engagement as (

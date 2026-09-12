@@ -2,7 +2,7 @@
 (organizations), an identity-provider export (users), a billing-system export
 (subscriptions, seat-based), and a product analytics export (usage events).
 
-Writes to data/raw/*.csv — deliberately un-transformed and slightly messy (a
+Writes to data/raw/*.csv, deliberately un-transformed and slightly messy (a
 handful of duplicate organization rows, as a re-exported CRM extract would
 produce; MRR left uncomputed, since the billing system tracks seat count and
 price per seat, not a precomputed revenue figure) so pipelines/etl.py has real
@@ -88,7 +88,7 @@ def export_users(orgs: list[dict]) -> list[dict]:
 def export_subscriptions(orgs: list[dict], users: list[dict]) -> None:
     """Billing-system export: one row per org's current (or final) contract
     state. price_per_seat comes from the plan; MRR itself is NOT exported here
-    — that's a derived figure computed in the transform step, the way it
+   , that's a derived figure computed in the transform step, the way it
     actually works when billing and revenue reporting are separate systems.
     """
     users_by_org: dict[int, int] = {}
@@ -106,7 +106,7 @@ def export_subscriptions(orgs: list[dict], users: list[dict]) -> None:
         plan_name, price_per_seat = random.choice(PLANS)
         initial_seats = max(1, users_by_org.get(org["id"], 1) - random.randint(0, 2))
 
-        # Segment-flavored churn/expansion propensity by plan tier — mirrors
+        # Segment-flavored churn/expansion propensity by plan tier, mirrors
         # how enterprise-tier accounts (more seats, more onboarding investment)
         # tend to be stickier than self-serve starter accounts.
         churn_prob = {"Starter": 0.42, "Team": 0.24, "Enterprise": 0.10}[plan_name]

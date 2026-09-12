@@ -24,8 +24,8 @@ from dashboard.queries import (
     weekly_active_users,
 )
 
-st.set_page_config(page_title="AI Data Analyst — Dashboard", layout="wide")
-st.title("AI Data Analyst — Dashboard")
+st.set_page_config(page_title="AI Data Analyst, Dashboard", layout="wide")
+st.title("AI Data Analyst, Dashboard")
 st.caption("Live queries against the warehouse via connectors/warehouse.py")
 
 tab_engagement, tab_revenue, tab_funnel, tab_risk = st.tabs(
@@ -52,7 +52,7 @@ with tab_funnel:
     df = onboarding_funnel()
     st.subheader("Signup → onboarding → activation")
     # st.bar_chart always sorts the category axis alphabetically, which would
-    # scramble the funnel's sequential order — build the chart directly so the
+    # scramble the funnel's sequential order, build the chart directly so the
     # bar order matches the data's own order.
     chart = (
         alt.Chart(df)
@@ -78,7 +78,7 @@ with tab_risk:
     st.subheader("Highest churn-risk active accounts")
     df = account_risk_list(top_n=25)
     if df.empty:
-        st.info("No account-health model trained yet — run `python -m ml.train_churn_model` first.")
+        st.info("No account-health model trained yet, run `python -m ml.train_churn_model` first.")
     else:
         st.dataframe(
             df[["name", "industry", "region", "plan_tier", "current_seat_count", "churn_risk"]],

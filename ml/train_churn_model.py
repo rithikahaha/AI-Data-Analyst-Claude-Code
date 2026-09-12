@@ -1,7 +1,7 @@
 """Train a churn-risk classifier on the sample warehouse.
 
 Reference pipeline for the data-scientist agent: build features via SQL, hold out
-a test set, evaluate on AUC/precision/recall (not accuracy — churn is imbalanced),
+a test set, evaluate on AUC/precision/recall (not accuracy, churn is imbalanced),
 and save the fitted pipeline + metrics.
 """
 

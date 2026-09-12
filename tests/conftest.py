@@ -1,4 +1,4 @@
-"""Ensures the sample warehouse exists before any test needs it — regenerating
+"""Ensures the sample warehouse exists before any test needs it, regenerating
 it via the real pipeline (not a shortcut) so tests exercise the same path
 production data takes.
 """

@@ -1,6 +1,6 @@
 """TF-IDF retrieval over knowledge/metrics_glossary.md for ai-engineer.
 
-Deliberately not an embedding-API-based RAG pipeline — this needs to work with
+Deliberately not an embedding-API-based RAG pipeline, this needs to work with
 zero external API keys, and TF-IDF is more than adequate for grounding a handful
 of short, keyword-distinct glossary entries. Swap in a real embedding model here
 if the knowledge base grows large enough that keyword overlap stops being a
@@ -37,7 +37,7 @@ def _load_chunks(path: Path = GLOSSARY_PATH) -> list[tuple[str, str]]:
 
 def retrieve(query: str, top_k: int = 1, min_score: float = 0.05) -> list[RetrievedChunk]:
     """Return the top_k glossary chunks most relevant to `query`, or an empty
-    list if nothing clears `min_score` — callers must treat an empty result as
+    list if nothing clears `min_score`, callers must treat an empty result as
     'not covered by the glossary,' not silently fall back to an invented
     definition.
     """

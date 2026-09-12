@@ -41,7 +41,7 @@ def validate_raw(raw: dict[str, pd.DataFrame]) -> None:
         check_referential_integrity(raw["subscriptions"], "org_id", raw["organizations"], "id", "raw.subscriptions -> raw.organizations"),
         check_referential_integrity(raw["product_events"], "user_id", raw["users"], "id", "raw.product_events -> raw.users"),
     ]
-    # Raw organizations is EXPECTED to fail uniqueness here — that's the
+    # Raw organizations is EXPECTED to fail uniqueness here, that's the
     # simulated source-system overlap this pipeline exists to clean up in
     # transform().
     run_checks_and_report(results, "raw extracts (pre-transform)")
@@ -115,7 +115,7 @@ def main() -> None:
     validate_raw(raw)
     tables = transform(raw)
     if not validate_transformed(tables):
-        raise SystemExit("Transformed data failed validation — aborting load.")
+        raise SystemExit("Transformed data failed validation, aborting load.")
     load(tables)
     if not validate_loaded():
         raise SystemExit("Post-load validation failed on the warehouse.")

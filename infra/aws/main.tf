@@ -1,4 +1,4 @@
-# Illustrative AWS deployment — see infra/README.md. Not applied; adapt the
+# Illustrative AWS deployment, see infra/README.md. Not applied; adapt the
 # placeholder values (container image, VPC/subnet ids, secrets) before use.
 
 terraform {
@@ -24,7 +24,7 @@ variable "db_username" {
 
 variable "db_password" {
   sensitive = true
-  # Set via TF_VAR_db_password or a secrets backend — never commit a real value.
+  # Set via TF_VAR_db_password or a secrets backend, never commit a real value.
 }
 
 variable "vpc_subnet_ids" {

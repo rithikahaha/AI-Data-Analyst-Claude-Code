@@ -45,7 +45,7 @@ def get_engine() -> Engine:
 def run_query(sql: str) -> pd.DataFrame:
     """Run a read-only SQL query and return the result as a DataFrame.
 
-    Rejects anything that isn't a SELECT/WITH/EXPLAIN statement — this project
+    Rejects anything that isn't a SELECT/WITH/EXPLAIN statement, this project
     never writes to the warehouse from an agent.
     """
     if not _ALLOWED_STATEMENT.match(sql):

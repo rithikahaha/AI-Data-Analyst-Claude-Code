@@ -143,6 +143,6 @@ if __name__ == "__main__":
     print(result)
     if result.underpowered:
         print(
-            "\nNote: the no-integration group is small — treat this as "
+            "\nNote: the no-integration group is small, treat this as "
             "suggestive, not confirmed, until more accounts are observed."
         )

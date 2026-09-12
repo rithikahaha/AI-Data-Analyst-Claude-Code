@@ -7,7 +7,7 @@ description: Flag outliers or unusual spikes/drops in a metric before reporting 
 
 ## Steps
 
-1. Compute a simple baseline for the metric — trailing 7/30-period average and
+1. Compute a simple baseline for the metric, trailing 7/30-period average and
    standard deviation, or period-over-period % change.
 2. Flag any point beyond ~2 standard deviations from the trailing baseline, or a
    period-over-period change beyond a business-reasonable threshold (e.g., >30%
@@ -15,11 +15,11 @@ description: Flag outliers or unusual spikes/drops in a metric before reporting 
 3. For each flagged point, check for an obvious cause before calling it a real trend:
    - A single unusually large account (e.g., one enterprise account's seat count
      change) skewing an MRR aggregate.
-   - A data gap (fewer rows than expected for that period — see `qa-reviewer`).
+   - A data gap (fewer rows than expected for that period, see `qa-reviewer`).
    - A known calendar effect (holiday, month-end, promotional period) if that context
      is available.
 4. Distinguish "real anomaly worth flagging to the business" from "artifact of small
-   sample size or a data issue" — only the former belongs in the final answer's
+   sample size or a data issue", only the former belongs in the final answer's
    headline; the latter belongs in caveats.
 
 ## Answer format

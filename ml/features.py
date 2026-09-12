@@ -1,9 +1,9 @@
-"""Feature building for the account-health (churn) model — shared between
+"""Feature building for the account-health (churn) model, shared between
 training (ml/train_churn_model.py) and scoring (dashboard/queries.py) so both
 see the exact same feature definition.
 
 Features are behavioral/engagement signals (how much of the product an account
-actually uses), not transactional ones — that's the deliberate difference from
+actually uses), not transactional ones, that's the deliberate difference from
 a generic e-commerce churn model: a SaaS account's health is about usage depth,
 not purchase history.
 """
@@ -56,7 +56,7 @@ def build_feature_frame() -> pd.DataFrame:
     """Pull one row per subscription with the features + label used for the
     account-health model. `total_events_90d` and `days_since_last_login` are
     computed relative to a fixed reference date, which is a known simplification
-    for this demo dataset — a production version would compute these relative
+    for this demo dataset, a production version would compute these relative
     to each account's own observation cutoff to avoid leaking post-outcome
     activity for already-churned accounts.
     """

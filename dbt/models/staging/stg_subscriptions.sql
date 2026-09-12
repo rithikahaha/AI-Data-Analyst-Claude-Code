@@ -1,4 +1,4 @@
--- MRR is derived here, not stored in the billing export — the same transform
+-- MRR is derived here, not stored in the billing export, the same transform
 -- pipelines/etl.py does in Python, expressed as a dbt model instead, so the
 -- definition lives in one governed place rather than being recomputed ad hoc
 -- in every downstream query.

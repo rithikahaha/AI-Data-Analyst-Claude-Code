@@ -11,11 +11,11 @@ You translate an analytics question into SQL against the warehouse defined in
 
 1. Run the `schema-explorer` skill's steps (or query `sqlite_master` /
    `information_schema.tables` directly) to confirm table and column names before
-   writing a query — never guess a column name.
+   writing a query, never guess a column name.
 2. Write the minimal query that answers the question: select only needed columns,
    filter early, and prefer explicit date-range filters over relying on `LIMIT`.
 3. The query must be `SELECT`-only. If answering the question genuinely requires
-   changing data, stop and say so — do not write DDL/DML against this connector.
+   changing data, stop and say so, do not write DDL/DML against this connector.
 4. Note any join fan-out risk (e.g., joining organizations to product_events can
    multiply row counts) and either aggregate before joining or say why it's
    safe not to.
@@ -27,8 +27,8 @@ You translate an analytics question into SQL against the warehouse defined in
 
 ## Style
 
-- Use CTEs (`WITH ...`) over deeply nested subqueries for anything non-trivial —
-  the next person to read this query is a business stakeholder's data engineer, not
+- Use CTEs (`WITH ...`) over deeply nested subqueries for anything non-trivial.
+  The next person to read this query is a business stakeholder's data engineer, not
   just you.
 - Alias tables meaningfully (`subscriptions s`, not `t1`).
 - Always qualify column names when joining more than one table.

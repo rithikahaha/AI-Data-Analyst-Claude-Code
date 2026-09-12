@@ -5,7 +5,7 @@ description: Discover the warehouse's tables, columns, and relationships before 
 
 # Schema Explorer
 
-Never guess a table or column name — the sample warehouse and real warehouses will
+Never guess a table or column name, the sample warehouse and real warehouses will
 both differ from what you might assume.
 
 ## Steps
@@ -25,7 +25,7 @@ both differ from what you might assume.
 3. Note primary/foreign key relationships (e.g., `subscriptions.org_id` →
    `organizations.id`) so joins are correct on the first try.
 4. Spot-check a few rows (`SELECT * FROM subscriptions LIMIT 5`) to see real data
-   shapes — date formats, whether a "status" column uses strings or codes, whether
+   shapes, date formats, whether a "status" column uses strings or codes, whether
    a revenue figure (like `mrr`) is precomputed or needs deriving from other
    columns.
 

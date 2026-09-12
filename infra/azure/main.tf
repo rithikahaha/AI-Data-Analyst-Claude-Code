@@ -1,4 +1,4 @@
-# Illustrative Azure deployment — see infra/README.md. Not applied; adapt the
+# Illustrative Azure deployment, see infra/README.md. Not applied; adapt the
 # placeholder values (resource group, container image) before use.
 
 terraform {

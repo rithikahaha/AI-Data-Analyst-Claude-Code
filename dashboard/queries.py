@@ -1,4 +1,4 @@
-"""Shared query/scoring logic for the dashboard — used by both the live
+"""Shared query/scoring logic for the dashboard, used by both the live
 Streamlit app (dashboard/app.py) and the snapshot exporter
 (dashboard/export_snapshot.py) so the two never drift out of sync.
 """
@@ -27,7 +27,7 @@ def weekly_active_users() -> pd.DataFrame:
 
 def net_revenue_retention() -> pd.DataFrame:
     """NRR among established accounts (subscription started >= 90 days before
-    the last observed activity) — the single most-watched B2B SaaS revenue
+    the last observed activity), the single most-watched B2B SaaS revenue
     metric: are existing accounts collectively expanding or shrinking?
     """
     return run_query(

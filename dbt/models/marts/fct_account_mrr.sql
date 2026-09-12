@@ -1,5 +1,5 @@
 -- Net revenue retention and its components (expansion vs. contraction vs.
--- churn) for established accounts — see knowledge/metrics_glossary.md's "Net
+-- churn) for established accounts, see knowledge/metrics_glossary.md's "Net
 -- revenue retention" entry for why this is a different question from a plain
 -- MRR trend.
 select

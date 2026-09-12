@@ -1,4 +1,4 @@
-# Illustrative GCP deployment — see infra/README.md. Not applied; adapt the
+# Illustrative GCP deployment, see infra/README.md. Not applied; adapt the
 # placeholder values (project id, container image) before use.
 
 terraform {

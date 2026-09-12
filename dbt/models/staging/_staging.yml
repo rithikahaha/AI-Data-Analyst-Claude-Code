@@ -41,7 +41,7 @@ models:
         tests: [not_null]
 
   - name: stg_product_events
-    description: Product usage telemetry — one row per event.
+    description: Product usage telemetry, one row per event.
     columns:
       - name: event_id
         tests: [unique, not_null]
