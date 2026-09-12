@@ -22,6 +22,16 @@ When asked to add or debug a data source:
 3. Run data-quality checks and fail loudly (not silently drop bad rows) when a check
    fails in a way that would corrupt downstream analysis.
 
+## Semantic layer (dbt)
+
+Reference: `dbt/` (see `dbt/README.md`) — a parallel demonstration of the same
+transform logic as governed, tested dbt models (`dbt build`), not a production
+dependency of the agent team today. When a metric definition needs to be shared
+across more than one consumer (a dashboard, a model, an ad-hoc query), that's
+the signal to define it once in dbt rather than re-deriving it inline
+everywhere — `dbt/models/marts/mart_account_health.sql` is the reference
+example, mirroring `ml/features.py`'s feature definitions as a tested model.
+
 ## Cloud & deployment
 
 Reference: `infra/{aws,gcp,azure}/` (Terraform, not applied) and

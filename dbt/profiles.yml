@@ -1,0 +1,7 @@
+ai_data_analyst:
+  target: dev
+  outputs:
+    dev:
+      type: duckdb
+      path: "../data/analytics.duckdb"
+      threads: 4

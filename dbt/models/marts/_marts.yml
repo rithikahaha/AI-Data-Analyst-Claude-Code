@@ -1,0 +1,41 @@
+version: 2
+
+models:
+  - name: fct_weekly_active_users
+    description: Distinct users with a login event, by ISO-ish week. Excludes the current partial week only in downstream reporting, not here — this mart reports every week it has data for.
+    columns:
+      - name: week
+        tests: [unique, not_null]
+      - name: wau
+        tests: [not_null]
+
+  - name: fct_onboarding_funnel
+    description: Distinct users reaching each onboarding/activation stage.
+    columns:
+      - name: event_type
+        tests:
+          - unique
+          - accepted_values:
+              arguments:
+                values: ["signup", "completed_onboarding", "created_project"]
+
+  - name: fct_account_mrr
+    description: One row per subscription with MRR, initial MRR, and expansion/contraction flags — the basis for net revenue retention.
+    columns:
+      - name: org_id
+        tests: [not_null]
+      - name: mrr
+        tests: [not_null]
+      - name: status
+        tests:
+          - accepted_values:
+              arguments:
+                values: ["active", "churned"]
+
+  - name: mart_account_health
+    description: One row per subscription with the behavioral features used by ml/train_churn_model.py — the same definitions, centralized.
+    columns:
+      - name: subscription_id
+        tests: [unique, not_null]
+      - name: churned
+        tests: [not_null]

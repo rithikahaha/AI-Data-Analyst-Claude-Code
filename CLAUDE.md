@@ -27,6 +27,9 @@ answer backed by real SQL, statistics, a model, or a chart.
 - `stats/`, `experiments/` — significance testing and A/B test readouts, used by
   `data-scientist`.
 - `ml/` — churn model training and feature building, used by `data-scientist`.
+- `dbt/` — a parallel, tested semantic layer (see `dbt/README.md`) demonstrating
+  the same transform/metric logic as governed dbt models; not wired into the
+  agent-facing warehouse today.
 - `dashboard/` — the standing Streamlit app and its published-Artifact companion,
   owned by `data-visualizer`.
 - `rag/`, `knowledge/metrics_glossary.md` — grounds ambiguous metric definitions,

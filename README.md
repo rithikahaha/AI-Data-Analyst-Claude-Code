@@ -98,6 +98,10 @@ python -m ml.train_churn_model         # train the account-health model
 python -m rag.retrieve                 # glossary grounding worked example
 streamlit run dashboard/app.py         # live dashboard
 pytest                                 # full test suite
+
+# semantic layer (separate install — see dbt/README.md)
+pip install -r dbt/requirements.txt
+cd dbt && DBT_PROFILES_DIR=$(pwd) dbt build
 ```
 
 ## Under the hood: how the work is split
@@ -119,6 +123,13 @@ know or care which one you're "talking to":
 `.claude/skills/` holds the reusable playbooks these agents follow: schema
 exploration, growth metrics (engagement + revenue retention), cohort retention,
 funnel analysis, anomaly detection, executive-summary formatting.
+
+- **[`dbt/`](dbt/)** — a parallel, tested semantic layer: the same
+  transform/metric logic as `pipelines/etl.py`, expressed as governed dbt
+  models instead (`dbt build` seeds, runs, and tests 40/40 checks against the
+  same sample data, and its outputs match the Python pipeline's numbers
+  exactly). Not wired into the agent-facing warehouse today — see
+  [`dbt/README.md`](dbt/README.md) for why it's kept separate.
 
 - **`connectors/warehouse.py`** — the one place all SQL goes through. Read-only
   by construction (rejects anything but `SELECT`/`WITH`/`EXPLAIN`). Defaults to

@@ -1,0 +1,21 @@
+name: "ai_data_analyst"
+version: "1.0.0"
+config-version: 2
+
+profile: "ai_data_analyst"
+
+seed-paths: ["../data/raw"]
+model-paths: ["models"]
+target-path: "target"
+clean-targets: ["target", "dbt_packages"]
+
+seeds:
+  ai_data_analyst:
+    +quote_columns: false
+
+models:
+  ai_data_analyst:
+    staging:
+      +materialized: view
+    marts:
+      +materialized: table

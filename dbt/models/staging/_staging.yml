@@ -1,0 +1,59 @@
+version: 2
+
+models:
+  - name: stg_organizations
+    description: One deduplicated row per organization (raw CRM export has re-export overlap).
+    columns:
+      - name: org_id
+        tests: [unique, not_null]
+
+  - name: stg_users
+    description: One row per user (seat-holder within an organization).
+    columns:
+      - name: user_id
+        tests: [unique, not_null]
+      - name: org_id
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_organizations')
+                field: org_id
+
+  - name: stg_subscriptions
+    description: One row per organization's current (or final) seat contract, with MRR derived from seat_count * price_per_seat.
+    columns:
+      - name: subscription_id
+        tests: [unique, not_null]
+      - name: org_id
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_organizations')
+                field: org_id
+      - name: status
+        tests:
+          - accepted_values:
+              arguments:
+                values: ["active", "churned"]
+      - name: mrr
+        tests: [not_null]
+
+  - name: stg_product_events
+    description: Product usage telemetry — one row per event.
+    columns:
+      - name: event_id
+        tests: [unique, not_null]
+      - name: user_id
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_users')
+                field: user_id
+      - name: event_type
+        tests:
+          - accepted_values:
+              arguments:
+                values: ["signup", "completed_onboarding", "created_project", "invited_teammate", "used_integration", "login"]

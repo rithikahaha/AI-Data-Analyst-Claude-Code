@@ -4,7 +4,12 @@ __pycache__/
 .env
 data/sample_warehouse.db
 data/raw/
+data/analytics.duckdb
 ml/models/*.joblib
 ml/models/*.json
+dbt/target/
+dbt/logs/
+dbt/dbt_packages/
+dbt/.user.yml
 .venv/
 venv/
