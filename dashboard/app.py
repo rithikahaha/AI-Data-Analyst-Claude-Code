@@ -55,24 +55,56 @@ st.title("AI Data Analyst, Dashboard")
 st.caption("Live queries against the warehouse via connectors/warehouse.py")
 
 tab_engagement, tab_revenue, tab_funnel, tab_risk = st.tabs(
-    ["Engagement", "Net Revenue Retention", "Onboarding Funnel", "Account Risk"]
+    ["Engagement", "Revenue Health", "Onboarding Funnel", "Account Risk"]
 )
 
 with tab_engagement:
+    st.subheader("Are people actually using the product?")
+    st.caption(
+        "Counts how many different people logged in each week. A line that "
+        "keeps climbing means more people are coming back and using it, not "
+        "just signing up once and disappearing."
+    )
     df = weekly_active_users()
-    st.subheader("Weekly active users (logins)")
-    st.line_chart(df.set_index("week")["wau"])
+    chart_df = df.rename(columns={"week": "Week", "wau": "Active users"})
+    st.line_chart(chart_df.set_index("Week")["Active users"])
     if len(df) >= 2:
+        latest = int(df["wau"].iloc[-1])
         wow = (df["wau"].iloc[-1] - df["wau"].iloc[-2]) / df["wau"].iloc[-2] * 100
-        st.metric("Latest week-over-week change", f"{wow:.1f}%")
-    st.dataframe(df, use_container_width=True)
+        st.metric("Active users this week", latest, delta=f"{wow:.1f}% vs. last week")
+    with st.expander("See the raw numbers"):
+        st.dataframe(chart_df, use_container_width=True)
 
 with tab_revenue:
+    st.subheader("Are existing customers spending more or less over time?")
+    st.caption(
+        "Net Revenue Retention (NRR) compares what today's paying customers "
+        "spend now against what they spent when they first signed up. Over "
+        "100% means customers are upgrading and adding seats faster than "
+        "others cancel or downgrade: growth from the existing customer base "
+        "alone, before counting any new customers. Under 100% means the "
+        "opposite: shrinking spend from customers you already have."
+    )
     df = net_revenue_retention()
-    st.subheader("Net revenue retention (accounts ≥ 90 days old)")
-    st.metric("NRR", f"{df['nrr_pct'].iloc[0]}%")
-    st.dataframe(df, use_container_width=True)
-    st.caption("NRR > 100% means expansion from existing accounts is outpacing churn + contraction.")
+    nrr = df["nrr_pct"].iloc[0]
+    st.metric("Net Revenue Retention", f"{nrr}%", delta=f"{nrr - 100:.1f} pts vs. break-even (100%)")
+    if nrr >= 100:
+        st.success(
+            f"Healthy. Existing customers are collectively spending {nrr}% of what they "
+            "used to, meaning upgrades and added seats are outpacing cancellations."
+        )
+    else:
+        st.warning(
+            f"Warning sign. Existing customers are collectively spending only {nrr}% of "
+            "what they used to, meaning cancellations and downgrades are outpacing upgrades."
+        )
+    display_df = df.rename(columns={
+        "current_mrr": "Revenue from these customers now ($/mo)",
+        "initial_mrr": "Revenue from these customers when they started ($/mo)",
+        "nrr_pct": "NRR (%)",
+    })
+    with st.expander("See the raw numbers"):
+        st.dataframe(display_df, use_container_width=True)
 
 with tab_funnel:
     df = onboarding_funnel()
