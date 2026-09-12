@@ -1,4 +1,4 @@
-# AI Data Analyst, Project Guide
+# AI Data Analyst Project Guide
 
 This repo turns Claude Code into a full agentic data team. A business user asks a
 question in plain English; `analyst-lead` decomposes it, routes it to the

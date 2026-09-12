@@ -46,12 +46,12 @@ def ensure_sample_data() -> None:
         train_churn_model.main()
 
 
-st.set_page_config(page_title="AI Data Analyst, Dashboard", layout="wide")
+st.set_page_config(page_title="AI Data Analyst Dashboard", layout="wide")
 
 with st.spinner("Setting up the sample warehouse (first load only)..."):
     ensure_sample_data()
 
-st.title("AI Data Analyst, Dashboard")
+st.title("AI Data Analyst Dashboard")
 st.caption("Live queries against the warehouse via connectors/warehouse.py")
 
 tab_engagement, tab_revenue, tab_funnel, tab_risk = st.tabs(
