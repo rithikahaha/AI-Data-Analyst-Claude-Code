@@ -1,6 +1,6 @@
 # AI Data Analyst with Claude Code
 
-> **30-second version.** You ask a business question in plain English. A team
+> You ask a business question in plain English. A team
 > of AI agents (built on Claude Code) figures out whether it needs SQL, a
 > statistics test, or a machine learning model, then answers with real
 > numbers, a chart, and honest caveats. No manual analysis, no clicking
