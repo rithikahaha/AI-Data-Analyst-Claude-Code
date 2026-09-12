@@ -26,16 +26,16 @@ You only ever talk to **one thing**: `analyst-lead`. Internally it works the
 question through six phases, Ask, Prepare, Process, Analyze, Share, Act,
 routing each one to whichever specialist owns it:
 
-**Business question &rarr; Ask &rarr; Prepare &rarr; Process &rarr; Analyze &rarr; Share &rarr; Act &rarr; Answer**
+**Business question &rarr; `analyst-lead` &rarr; Answer**
 
-| Phase | What happens |
-|---|---|
-| Ask | Understand the real problem, not just the literal question |
-| Prepare | Find the right data and confirm it's trustworthy |
-| Process | Clean and validate before trusting any number |
-| Analyze | SQL, statistics, or ML, whichever the question needs |
-| Share | A chart, if it makes the answer clearer |
-| Act | A plain answer plus the business "so what" |
+| Phase | Who does it | What happens |
+|---|---|---|
+| Ask | `analyst-lead`, with `ai-engineer` for ambiguous terms | Understand the real problem, not just the literal question |
+| Prepare | `sql-engineer`, `data-platform-engineer` | Find the right data and confirm it's trustworthy |
+| Process | `qa-reviewer` | Clean and validate before trusting any number |
+| Analyze | `sql-engineer` or `data-scientist` | SQL, statistics, or ML, whichever the question needs |
+| Share | `data-visualizer` | A chart, if it makes the answer clearer |
+| Act | `analyst-lead` | A plain answer plus the business "so what" |
 
 Why split it into agents instead of one giant prompt? Because a single prompt
 trying to be equally good at SQL, statistics, ML, cloud, and QA gets mushy.
