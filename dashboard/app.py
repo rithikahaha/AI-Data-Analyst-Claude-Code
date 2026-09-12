@@ -16,6 +16,7 @@ import streamlit as st
 # so the `dashboard` package (this file's parent) wouldn't otherwise be importable.
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
+from connectors.warehouse import DEFAULT_SQLITE_PATH
 from dashboard.queries import (
     account_risk_list,
     churn_by_plan_tier,
@@ -23,8 +24,33 @@ from dashboard.queries import (
     onboarding_funnel,
     weekly_active_users,
 )
+from ml.train_churn_model import MODEL_PATH
+
+
+@st.cache_resource
+def ensure_sample_data() -> None:
+    """A fresh deploy (e.g. Streamlit Community Cloud) clones the repo with no
+    warehouse and no trained model, since both are gitignored generated
+    artifacts. Build them once on first load instead of requiring a manual
+    setup step that a hosted deploy can't run.
+    """
+    if not DEFAULT_SQLITE_PATH.exists():
+        from pipelines import etl
+        from scripts import export_raw_sources
+
+        export_raw_sources.main()
+        etl.main()
+    if not MODEL_PATH.exists():
+        from ml import train_churn_model
+
+        train_churn_model.main()
+
 
 st.set_page_config(page_title="AI Data Analyst, Dashboard", layout="wide")
+
+with st.spinner("Setting up the sample warehouse (first load only)..."):
+    ensure_sample_data()
+
 st.title("AI Data Analyst, Dashboard")
 st.caption("Live queries against the warehouse via connectors/warehouse.py")
 
