@@ -174,16 +174,17 @@
       </div>
     </div>
     <div class="card">
-      <h2>Signup &rarr; onboarding &rarr; activation</h2>
-      <p class="card-sub">Users reaching each onboarding stage</p>
+      <h2>Where do new users give up?</h2>
+      <p class="card-sub">Signup &rarr; getting set up &rarr; actually using the product</p>
       <svg id="funnel-chart" viewBox="0 0 400 220" width="100%" preserveAspectRatio="xMidYMid meet"></svg>
+      <p class="card-sub" id="funnel-note" style="margin-top:10px;"></p>
     </div>
   </div>
 
   <div class="grid-2">
     <div class="card">
       <h2>Accounts most likely to cancel</h2>
-      <p class="card-sub">Ranked by a prediction model trained on how much each account actually uses the product</p>
+      <p class="card-sub">Ranked by a prediction model based on how much each account actually uses the product</p>
       <div class="table-scroll">
         <table>
           <thead><tr>
@@ -194,8 +195,8 @@
       </div>
     </div>
     <div class="card">
-      <h2>Churn rate by plan tier</h2>
-      <p class="card-sub">Share of subscriptions with status = churned</p>
+      <h2>Which plan cancels the most?</h2>
+      <p class="card-sub">Share of each plan's customers who have canceled</p>
       <div class="segment-bars" id="segment-bars"></div>
     </div>
   </div>
@@ -324,6 +325,18 @@ function renderFunnelChart(funnel){
   });
 
   svg.innerHTML = bars;
+
+  let biggestDrop = null;
+  for (let i = 1; i < funnel.length; i++) {
+    const pct = (funnel[i-1].users - funnel[i].users) / funnel[i-1].users * 100;
+    if (!biggestDrop || pct > biggestDrop.pct) {
+      biggestDrop = { pct, from: funnel[i-1].event_type.replace('_',' '), to: funnel[i].event_type.replace('_',' ') };
+    }
+  }
+  const note = document.getElementById('funnel-note');
+  if (note && biggestDrop) {
+    note.innerHTML = `Biggest drop-off: <strong>${biggestDrop.pct.toFixed(0)}%</strong> lost between <strong>${biggestDrop.from}</strong> and <strong>${biggestDrop.to}</strong>.`;
+  }
 }
 
 function renderSegmentBars(tiers){
@@ -352,7 +365,7 @@ function renderRiskTable(rows){
         <td class="num">
           <span class="pill ${tier.cls}">
             <svg viewBox="0 0 8 8"><circle cx="4" cy="4" r="4" fill="currentColor"/></svg>
-            ${tier.label} · ${r.churn_risk.toFixed(2)}
+            ${tier.label} · ${Math.round(r.churn_risk * 100)}%
           </span>
         </td>
       </tr>

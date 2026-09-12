@@ -107,38 +107,88 @@ with tab_revenue:
         st.dataframe(display_df, use_container_width=True)
 
 with tab_funnel:
+    st.subheader("Where do new users give up before they get value?")
+    st.caption(
+        "Follows people from the moment they sign up, through getting set up "
+        "(onboarding), to actually using the core feature (activation). "
+        "Whichever gap between two bars is the biggest is where we're losing "
+        "the most people, and usually the most useful place to fix something."
+    )
     df = onboarding_funnel()
-    st.subheader("Signup → onboarding → activation")
+    chart_df = df.copy()
+    chart_df["Stage"] = chart_df["event_type"].str.replace("_", " ").str.title()
     # st.bar_chart always sorts the category axis alphabetically, which would
     # scramble the funnel's sequential order, build the chart directly so the
     # bar order matches the data's own order.
     chart = (
-        alt.Chart(df)
+        alt.Chart(chart_df)
         .mark_bar()
-        .encode(x=alt.X("event_type", sort=df["event_type"].tolist()), y="users")
+        .encode(x=alt.X("Stage", sort=chart_df["Stage"].tolist()), y=alt.Y("users", title="People"))
     )
     st.altair_chart(chart, use_container_width=True)
-    st.dataframe(df, use_container_width=True)
     if len(df) == 3 and df["users"].iloc[0] > 0:
-        overall_conversion = df["users"].iloc[-1] / df["users"].iloc[0] * 100
-        st.metric("Overall signup → activation conversion", f"{overall_conversion:.1f}%")
+        overall = df["users"].iloc[-1] / df["users"].iloc[0] * 100
+        drops = [
+            (
+                df["event_type"].iloc[i - 1].replace("_", " "),
+                df["event_type"].iloc[i].replace("_", " "),
+                (df["users"].iloc[i - 1] - df["users"].iloc[i]) / df["users"].iloc[i - 1] * 100,
+            )
+            for i in range(1, len(df))
+        ]
+        biggest = max(drops, key=lambda d: d[2])
+        st.metric("Signups who make it all the way to activation", f"{overall:.1f}%")
+        st.info(
+            f"Biggest drop-off: **{biggest[2]:.0f}%** of people are lost between "
+            f"**{biggest[0]}** and **{biggest[1]}**. That's the step worth fixing first."
+        )
+    with st.expander("See the raw numbers"):
+        st.dataframe(chart_df.rename(columns={"Stage": "Stage", "users": "People"})[["Stage", "People"]], use_container_width=True)
 
 with tab_risk:
+    st.subheader("Which type of customer cancels the most?")
+    st.caption(
+        "Groups every customer by their plan and shows what share of each "
+        "group has canceled. If one plan cancels much more than the others, "
+        "that plan (or the type of customer who buys it) needs a closer look."
+    )
     tier_df = churn_by_plan_tier()
-    st.subheader("Churn rate by plan tier")
     chart = (
         alt.Chart(tier_df)
         .mark_bar()
-        .encode(x=alt.X("plan_tier", sort=tier_df["plan_tier"].tolist()), y="churn_rate_pct")
+        .encode(
+            x=alt.X("plan_tier", sort=tier_df["plan_tier"].tolist(), title="Plan"),
+            y=alt.Y("churn_rate_pct", title="Cancellation rate (%)"),
+        )
     )
     st.altair_chart(chart, use_container_width=True)
 
-    st.subheader("Highest churn-risk active accounts")
+    st.subheader("Which specific accounts are most likely to cancel next?")
+    st.caption(
+        "A prediction model scores every active customer on how likely they "
+        "are to cancel, based on how much they actually use the product, not "
+        "just what plan they're on. The highest-risk ones are worth a "
+        "proactive check-in before they leave."
+    )
     df = account_risk_list(top_n=25)
     if df.empty:
         st.info("No account-health model trained yet, run `python -m ml.train_churn_model` first.")
     else:
+        display_df = df[["name", "industry", "region", "plan_tier", "current_seat_count", "churn_risk"]].copy()
+        display_df["Risk level"] = display_df["churn_risk"].apply(
+            lambda r: "\U0001F534 High" if r >= 0.6 else ("\U0001F7E1 Medium" if r >= 0.35 else "\U0001F7E2 Low")
+        )
+        display_df["Cancellation risk"] = (display_df["churn_risk"] * 100).round(0).astype(int).astype(str) + "%"
+        display_df = display_df.rename(
+            columns={
+                "name": "Account",
+                "industry": "Industry",
+                "region": "Region",
+                "plan_tier": "Plan",
+                "current_seat_count": "Seats",
+            }
+        )
         st.dataframe(
-            df[["name", "industry", "region", "plan_tier", "current_seat_count", "churn_risk"]],
+            display_df[["Account", "Industry", "Region", "Plan", "Seats", "Risk level", "Cancellation risk"]],
             use_container_width=True,
         )
