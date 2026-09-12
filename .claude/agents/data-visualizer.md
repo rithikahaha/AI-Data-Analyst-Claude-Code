@@ -11,12 +11,12 @@ most impressive one.
 
 ## Chart selection
 
-- **Trend over time** (revenue by month, churn by quarter) → line chart.
-- **Comparison across categories** (revenue by segment, defaults by loan grade) →
-  horizontal or vertical bar chart, sorted by value unless there's a natural order
-  (e.g., risk grades A→G).
-- **Distribution** (order value spread, days-to-churn) → histogram.
-- **Sequential drop-off** (signup → activation → purchase) → funnel chart.
+- **Trend over time** (WAU by week, MRR by month) → line chart.
+- **Comparison across categories** (churn rate by plan tier, accounts by
+  industry) → horizontal or vertical bar chart, sorted by value unless there's
+  a natural order (e.g., plan tiers Starter→Team→Enterprise).
+- **Distribution** (seat-count spread, days-to-churn) → histogram.
+- **Sequential drop-off** (signup → onboarding → activation) → funnel chart.
 - **Part-of-whole at a single point in time** → use a bar chart, not a pie chart,
   once there are more than ~4 categories.
 
@@ -32,11 +32,11 @@ most impressive one.
 
 ## The standing dashboard
 
-`dashboard/app.py` is a Streamlit app covering revenue trend, churn/retention, the
-signup-to-purchase funnel, and the churn-risk list from `data-scientist`'s model —
-the questions stakeholders ask often enough to not re-derive each time. When asked
-to "add this to the dashboard" or update it: query through
-`connectors/warehouse.py` exactly like any other chart, keep each metric in its own
-tab/section, and re-run `python dashboard/export_snapshot.py` afterward so the
-published Artifact version (which reads a precomputed `dashboard/metrics.json`
-rather than running live queries) stays in sync.
+`dashboard/app.py` is a Streamlit app covering weekly active users, net revenue
+retention, the onboarding funnel, and the account-risk list from
+`data-scientist`'s model — the questions stakeholders ask often enough to not
+re-derive each time. When asked to "add this to the dashboard" or update it:
+query through `connectors/warehouse.py` exactly like any other chart, keep each
+metric in its own tab/section, and re-run `python -m dashboard.export_snapshot`
+afterward so the published Artifact version (which reads a precomputed
+`dashboard/metrics.json` rather than running live queries) stays in sync.

@@ -20,12 +20,13 @@ both differ from what you might assume.
    (On a non-SQLite warehouse, use `information_schema.tables` instead.)
 2. For each relevant table, inspect columns and types:
    ```python
-   print(pd.read_sql("PRAGMA table_info(orders)", engine))
+   print(pd.read_sql("PRAGMA table_info(subscriptions)", engine))
    ```
-3. Note primary/foreign key relationships (e.g., `orders.customer_id` →
-   `customers.id`) so joins are correct on the first try.
-4. Spot-check a few rows (`SELECT * FROM orders LIMIT 5`) to see real data shapes —
-   date formats, whether amounts are cents or dollars, whether a "status" column uses
-   strings or codes.
+3. Note primary/foreign key relationships (e.g., `subscriptions.org_id` →
+   `organizations.id`) so joins are correct on the first try.
+4. Spot-check a few rows (`SELECT * FROM subscriptions LIMIT 5`) to see real data
+   shapes — date formats, whether a "status" column uses strings or codes, whether
+   a revenue figure (like `mrr`) is precomputed or needs deriving from other
+   columns.
 
 Only after this should you hand off to writing the actual analysis query.

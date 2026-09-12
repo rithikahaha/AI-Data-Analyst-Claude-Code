@@ -24,7 +24,7 @@ just a number — and to route the work to whichever teammate actually owns it.
 
 1. **Clarify the question.** Restate it in analytics terms: what metric, what
    segment/filter, what time window, what comparison (vs. prior period? vs. a
-   segment?). If a term is ambiguous (e.g., "active customer"), have `ai-engineer`
+   segment?). If a term is ambiguous (e.g., "active user"), have `ai-engineer`
    check `knowledge/metrics_glossary.md` before proceeding rather than guessing.
 2. **Route it.** Descriptive → `sql-engineer`. "Is this significant" / "who's likely
    to X" → `data-scientist`. Data quality/pipeline/infra/scaling →

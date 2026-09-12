@@ -110,36 +110,39 @@ def check_guardrail(
 
 
 if __name__ == "__main__":
-    # Worked example: treat subscription plan as a proxy "experiment arm" and
-    # compare churn rates the way an A/B test readout would, against the sample
-    # warehouse seeded by scripts/seed_sample_data.py.
+    # Worked example: does adopting an integration correlate with an account
+    # sticking around, or does it just look that way in a raw comparison?
+    # Against the sample warehouse from scripts/export_raw_sources.py.
     from connectors.warehouse import run_query
 
     df = run_query(
         """
-        SELECT plan,
-               SUM(CASE WHEN status = 'churned' THEN 1 ELSE 0 END) AS churned,
-               COUNT(*) AS total
-        FROM subscriptions
-        GROUP BY plan
+        WITH adopters AS (
+            SELECT DISTINCT org_id FROM product_events WHERE event_type = 'used_integration'
+        )
+        SELECT
+            CASE WHEN s.org_id IN (SELECT org_id FROM adopters) THEN 'adopted' ELSE 'not_adopted' END AS grp,
+            SUM(CASE WHEN s.status = 'churned' THEN 1 ELSE 0 END) AS churned,
+            COUNT(*) AS total
+        FROM subscriptions s
+        GROUP BY grp
         """
     )
     print(df)
 
-    starter = df[df["plan"] == "Starter"].iloc[0]
-    scale = df[df["plan"] == "Scale"].iloc[0]
+    adopted = df[df["grp"] == "adopted"].iloc[0]
+    not_adopted = df[df["grp"] == "not_adopted"].iloc[0]
 
     result = two_proportion_z_test(
-        control_successes=int(starter["churned"]),
-        control_n=int(starter["total"]),
-        treatment_successes=int(scale["churned"]),
-        treatment_n=int(scale["total"]),
+        control_successes=int(not_adopted["churned"]),
+        control_n=int(not_adopted["total"]),
+        treatment_successes=int(adopted["churned"]),
+        treatment_n=int(adopted["total"]),
     )
-    print("\nStarter (control) vs Scale (treatment) churn rate:")
+    print("\nNo integration (control) vs adopted integration (treatment) churn rate:")
     print(result)
     if result.underpowered:
         print(
-            "\nNote: sample size is below what's needed to reliably detect a "
-            "2pp difference at 80% power — treat a non-significant result here "
-            "as inconclusive, not as proof of no effect."
+            "\nNote: the no-integration group is small — treat this as "
+            "suggestive, not confirmed, until more accounts are observed."
         )

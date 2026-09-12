@@ -13,8 +13,8 @@ answer backed by real SQL, statistics, a model, or a chart.
   `data-visualizer` (BI/dashboard), `ai-engineer` (RAG grounding + agent/skill
   governance), `qa-reviewer` (per-query QA + test suite/CI). Claude Code loads
   these automatically.
-- `.claude/skills/` — reusable analysis playbooks (cohort retention, revenue trend,
-  funnel analysis, anomaly detection, executive summary formatting). Invoke with
+- `.claude/skills/` — reusable analysis playbooks (cohort retention, growth
+  metrics, funnel analysis, anomaly detection, executive summary formatting). Invoke with
   `/skill-name` or let an agent invoke them.
 - `connectors/warehouse.py` — single abstraction for talking to a warehouse. Defaults
   to the local SQLite sample warehouse at `data/sample_warehouse.db`; swap in a real
@@ -46,8 +46,8 @@ answer backed by real SQL, statistics, a model, or a chart.
 - **Sanity-check before answering.** Row counts, null rates, and date ranges should
   be spot-checked (`qa-reviewer`, `anomaly-detection` skill) before a number is
   presented as fact.
-- **Cite the definition used.** Ambiguity about *which* revenue, churn, or active-
-  customer definition was used is the most common way a "correct" query gives a
+- **Cite the definition used.** Ambiguity about *which* MRR, churn, or active-
+  user definition was used is the most common way a "correct" query gives a
   misleading answer — check `knowledge/metrics_glossary.md` via `rag/retrieve.py`
   when a question uses one of these terms.
 - **Statistical claims need a test, not a glance.** "X is higher than Y" from a
@@ -70,5 +70,5 @@ python -m pipelines.etl
 pytest
 ```
 
-Then just ask Claude Code a business question, e.g. "Which customer segment has the
+Then just ask Claude Code a business question, e.g. "Which plan tier has the
 highest churn, and is that difference actually significant or could it be noise?"

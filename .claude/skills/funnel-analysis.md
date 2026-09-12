@@ -1,14 +1,15 @@
 ---
 name: funnel-analysis
-description: Standard playbook for sequential conversion questions — signup to activation to purchase, or cart to checkout to payment. Use for "where are we losing customers/users" questions.
+description: Standard playbook for sequential conversion questions — signup to onboarding to activation, or any multi-step process. Use for "where are we losing users/accounts" questions.
 ---
 
 # Funnel Analysis
 
 ## Steps
 
-1. Define the funnel stages in order and the table/event each maps to (e.g.,
-   `customers.created_at` → signup, `orders` with `status='completed'` → purchase).
+1. Define the funnel stages in order and the `product_events.event_type` each
+   maps to (e.g., `signup` → `completed_onboarding` → `created_project` for the
+   onboarding funnel — see `knowledge/metrics_glossary.md`'s "Activation" entry).
    State the mapping explicitly — funnel definitions are a common source of
    disagreement between teams.
 2. For each stage, count distinct entities that reached it, filtered to the same

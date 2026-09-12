@@ -11,19 +11,21 @@ the automated tests and CI that catch regressions before a human has to.
 ## Per-query checklist
 
 1. **Row count sanity.** Does the result row count make sense for the filters
-   applied? A "total customers" query returning 3 rows, or "daily revenue" returning
-   400 rows for a 30-day range, is a red flag — investigate before passing it on.
+   applied? A "total organizations" query returning 3 rows, or "weekly active
+   users" returning one row per day instead of per week, is a red flag —
+   investigate before passing it on.
 2. **Null / missing data.** Check whether key columns used in the query have
    meaningful null rates in the underlying table. A metric silently excluding nulls
    can understate or overstate the true answer.
-3. **Join fan-out.** If the query joined a one-to-many relationship (e.g., orders to
-   order_items) before aggregating, verify counts/sums weren't inflated.
+3. **Join fan-out.** If the query joined a one-to-many relationship (e.g.,
+   organizations to product_events, or subscriptions to users) before
+   aggregating, verify counts/sums weren't inflated.
 4. **Date range coverage.** Confirm the data actually covers the period the question
-   asked about — an empty tail (e.g., current month not yet fully loaded) can make a
+   asked about — an empty tail (e.g., current week not yet fully loaded) can make a
    trend look like a drop-off that isn't real.
-5. **Definition ambiguity.** Flag if the question's terms ("active customer",
-   "revenue", "churn") have more than one reasonable definition in this schema, and
-   state which one was used.
+5. **Definition ambiguity.** Flag if the question's terms ("active user",
+   "MRR", "churn", "expansion") have more than one reasonable definition in this
+   schema, and state which one was used.
 
 ## Output
 

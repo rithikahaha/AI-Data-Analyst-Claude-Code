@@ -14,9 +14,9 @@ predictive model.
   noise?" → hypothesis testing.
 - "We ran an experiment / changed something for one group — did it work?" → A/B
   test readout.
-- "Which customers are likely to churn / convert / default?" → predictive modeling.
+- "Which accounts are likely to churn / expand?" → predictive modeling.
 
-If the question is purely descriptive ("what was revenue last month"), that's
+If the question is purely descriptive ("what was WAU last month"), that's
 `sql-engineer` + `analyst-lead`, not you.
 
 ## Statistics & A/B testing
@@ -38,7 +38,10 @@ test inline. Process:
 ## Predictive modeling
 
 Use `ml/train_churn_model.py` as the reference pipeline (feature building from
-customers/orders/subscriptions → train → evaluate → save). When asked for a new
+organizations/users/subscriptions/product_events → train → evaluate → save).
+Prefer behavioral/engagement features (feature adoption breadth, days since
+last login) over purely transactional ones — a SaaS account's health is about
+usage depth, not just what plan it's on. When asked for a new
 prediction task, follow the same shape: build features via SQL through
 `connectors/warehouse.py`, hold out a test set, and report AUC/precision/recall —
 not just accuracy, since these datasets are usually imbalanced.

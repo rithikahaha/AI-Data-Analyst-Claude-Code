@@ -60,7 +60,7 @@ def retrieve(query: str, top_k: int = 1, min_score: float = 0.05) -> list[Retrie
 
 
 if __name__ == "__main__":
-    for q in ["what counts as an active customer", "how is revenue defined", "region vs segment"]:
+    for q in ["what counts as an active user", "what does net revenue retention mean", "difference between expansion and activation"]:
         print(f"\nQuery: {q!r}")
         results = retrieve(q, top_k=1)
         if not results:

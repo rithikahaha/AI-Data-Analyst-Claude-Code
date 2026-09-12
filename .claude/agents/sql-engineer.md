@@ -16,8 +16,9 @@ You translate an analytics question into SQL against the warehouse defined in
    filter early, and prefer explicit date-range filters over relying on `LIMIT`.
 3. The query must be `SELECT`-only. If answering the question genuinely requires
    changing data, stop and say so — do not write DDL/DML against this connector.
-4. Note any join fan-out risk (e.g., joining orders to order_items can multiply row
-   counts) and either aggregate before joining or say why it's safe not to.
+4. Note any join fan-out risk (e.g., joining organizations to product_events can
+   multiply row counts) and either aggregate before joining or say why it's
+   safe not to.
 5. Run the query through `connectors/warehouse.py` (`run_query(sql)`), not a raw
    driver call, so it goes through the same read-only guard everywhere else in this
    project uses.
@@ -29,5 +30,5 @@ You translate an analytics question into SQL against the warehouse defined in
 - Use CTEs (`WITH ...`) over deeply nested subqueries for anything non-trivial —
   the next person to read this query is a business stakeholder's data engineer, not
   just you.
-- Alias tables meaningfully (`orders o`, not `t1`).
+- Alias tables meaningfully (`subscriptions s`, not `t1`).
 - Always qualify column names when joining more than one table.

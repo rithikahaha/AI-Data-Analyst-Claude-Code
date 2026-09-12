@@ -4,35 +4,37 @@ Ask a business question in plain English. Get back a real answer — backed by
 actual SQL, a real chart, or a real model, with the caveats that make it
 trustworthy — in the time it takes to read this sentence, not an afternoon.
 
-This is the natural next step from [Credit-Risk-Portfolio-Analytics](https://github.com/rithikahaha/Credit-Risk-Portfolio-Analytics),
-a static Power BI dashboard: instead of pre-building a fixed set of visuals, this
-answers whatever question actually gets asked, on demand.
+This one's a deliberate departure from my other analytics projects (Power
+BI/Tableau dashboards on lending, supply chain, and e-commerce data): those are
+about doing the analysis by hand with BI tools. This one is about *building the
+AI system that does it* — an agentic analyst, applied to the metrics that
+actually run a B2B SaaS product business (engagement, activation, net revenue
+retention, account health), not another BI dashboard on a transactional dataset.
 
 ## See it in action
 
 Two real runs against the sample warehouse in this repo — full write-ups with
 queries and caveats in [`examples/example_qna.md`](examples/example_qna.md).
 
-### "Where are we losing customers, and what's that costing us?"
+### "Is product engagement growing or shrinking?"
 
-Of 800 signups, only 322 (40%) ever buy anything. The leak isn't at signup —
-it's the step after: **48% of everyone who activates the product still never
-buys**, nearly double the drop-off at signup itself. At an average $315 first
-order, closing even 10 points of that gap is worth roughly **$19,500 in new
-revenue**. One query found the leak; a second number turned it into a dollar
-figure a stakeholder can act on.
+**Weekly active users grew from 234 to 411 over the last 26 weeks — up 75.6%.**
+One query, straight from product usage telemetry, answers a question that
+otherwise means stitching together login logs by hand.
 
-### "Is our premium plan actually earning its price through better retention?"
+### "Are we healthy overall, and which accounts need attention this quarter?"
 
-Scale customers pay 10x Starter's price. Their churn rate looks a little better
-— but a significance test shows that gap is **noise, not a real effect** (p =
-0.69). What *is* real: scoring every active subscription with a churn model
-shows the actual risk is concentrated in one slice — SMB customers are 51% of
-Scale's base but **80% of its highest-risk accounts**. The plan isn't the
-problem; one customer segment inside it is.
+**Net revenue retention is 108.5%** — existing accounts are expanding faster
+than they're churning, a genuinely healthy sign. But that headline hides real
+variation: **Starter-plan accounts churn at 28.8% vs. 6.7% for Enterprise**, and
+scoring every active account with a churn model surfaces the specific ones
+worth calling — not just a segment average, a 12-seat Starter account with a
+0.94 risk score. A significance test on a promising-looking pattern (does using
+an integration predict retention?) comes back not-quite-significant at this
+sample size — reported as "worth an experiment," not oversold as proven.
 
 That second example needed more than a lookup — a significance test to avoid
-chasing a fake pattern, and a model to find the specific customers worth
+chasing a fake pattern, and a model to find the specific accounts worth
 worrying about. Answering it is what the rest of this README is about.
 
 ## What this actually is
@@ -72,17 +74,17 @@ python -m scripts.export_raw_sources
 python -m pipelines.etl
 ```
 
-This generates a realistic sample warehouse (`data/sample_warehouse.db`) modeling
-a small subscription e-commerce business over ~2.5 years: customers, orders,
-subscriptions (for churn/retention), and signup→activation→purchase funnel
-events — enough to exercise the whole system with no external credentials.
+This generates a realistic sample warehouse (`data/sample_warehouse.db`)
+modeling a small B2B SaaS product over ~2.5 years: organizations (paying
+accounts), users (seats), seat-based subscriptions, and product usage
+telemetry — enough to exercise the whole system with no external credentials.
 
 Then open this repo in Claude Code and ask a business question, e.g.:
 
-- "How has revenue been trending over the last few months?"
-- "Where in the signup-to-purchase funnel are we losing the most customers?"
-- "Does the Scale plan actually have lower churn than Starter, or is that noise?"
-- "Which of our current customers are most likely to churn?"
+- "Is product engagement growing or shrinking?"
+- "Where are we losing users before they actually try the product?"
+- "Are we healthy overall, and which accounts need attention this quarter?"
+- "Does using integrations actually correlate with accounts staying longer?"
 
 See [`examples/example_qna.md`](examples/example_qna.md) for three full runs, and
 [`evals/eval_cases.md`](evals/eval_cases.md) for the golden questions used to
@@ -92,7 +94,7 @@ check answer quality as the system grows.
 
 ```bash
 python -m experiments.ab_test          # A/B readout worked example
-python -m ml.train_churn_model         # train + register the churn model
+python -m ml.train_churn_model         # train the account-health model
 python -m rag.retrieve                 # glossary grounding worked example
 streamlit run dashboard/app.py         # live dashboard
 pytest                                 # full test suite
@@ -115,8 +117,8 @@ know or care which one you're "talking to":
 | [`qa-reviewer`](.claude/agents/qa-reviewer.md) | Per-answer sanity checks, test suite, CI | `tests/`, `.github/workflows/ci.yml` |
 
 `.claude/skills/` holds the reusable playbooks these agents follow: schema
-exploration, revenue trend analysis, cohort retention, funnel analysis, anomaly
-detection, executive-summary formatting.
+exploration, growth metrics (engagement + revenue retention), cohort retention,
+funnel analysis, anomaly detection, executive-summary formatting.
 
 - **`connectors/warehouse.py`** — the one place all SQL goes through. Read-only
   by construction (rejects anything but `SELECT`/`WITH`/`EXPLAIN`). Defaults to

@@ -14,47 +14,47 @@ element is a finding, not necessarily a failure — but it should be explainable
 
 ### Case 1 — descriptive, unambiguous
 
-**Question:** "How has revenue been trending over the last few months?"
+**Question:** "Is product engagement growing or shrinking?"
 
 **Expected:**
 - Routed to `sql-engineer` directly (no `data-scientist` needed — purely descriptive).
-- Cites the revenue definition (gross value of `completed` orders) — should match
-  `knowledge/metrics_glossary.md`'s "Revenue" entry.
-- Shows the SQL and a chart.
-- Excludes the current partial month from the trend, or explicitly flags it if included.
+- Cites the active-user definition (a `login` event in `product_events`) — should
+  match `knowledge/metrics_glossary.md`'s "Active user" entry.
+- Shows the SQL and a WAU trend chart.
+- Excludes the current partial week from the trend, or explicitly flags it if included.
 
 ### Case 2 — ambiguous term, should trigger glossary grounding
 
-**Question:** "How many active customers do we have?"
+**Question:** "How many active users do we have?"
 
 **Expected:**
-- `ai-engineer`/`rag/retrieve.py` grounds "active customer" against the glossary
-  (subscription-based definition) rather than the agent guessing "customer who
-  ordered recently."
-- The answer states which definition was used, since this is exactly the kind of
-  ambiguity `qa-reviewer`'s checklist calls out.
+- `ai-engineer`/`rag/retrieve.py` grounds "active user" against the glossary
+  (weekly-login-based definition) rather than the agent guessing "any user with
+  an account."
+- The answer states which definition was used and the time window (a week), since
+  this is exactly the kind of ambiguity `qa-reviewer`'s checklist calls out.
 
 ### Case 3 — needs statistical judgment, not just a number
 
-**Question:** "Does the Scale plan have lower churn than the Starter plan?"
+**Question:** "Does using integrations actually correlate with accounts staying longer?"
 
 **Expected:**
 - Routed to `data-scientist`, not answered as a plain SQL comparison.
 - Runs a significance test (`experiments/ab_test.py`'s two-proportion z-test) and
-  reports the confidence interval / significance, not just "Scale is X%, Starter
-  is Y%."
-- If underpowered (small sample), says so explicitly rather than presenting a
-  null result as proof of no difference.
+  reports the confidence interval / significance, not just "adopters churn at X%,
+  non-adopters at Y%."
+- If underpowered (small control group), says so explicitly rather than presenting
+  a non-significant result as proof of no effect.
 
 ### Case 4 — predictive, needs the ML model and its limitations stated
 
-**Question:** "Which of our current customers are most likely to churn?"
+**Question:** "Which accounts should customer success focus on this quarter?"
 
 **Expected:**
 - Routed to `data-scientist` (or reads `dashboard/queries.py`'s
-  `churn_risk_list` / the standing dashboard's Churn Risk tab).
+  `account_risk_list` / the standing dashboard's Account Risk tab).
 - States the model's reported AUC and that it's a probability, not a certainty.
-- Does not claim a customer "will" churn — states risk score / relative ranking.
+- Does not claim an account "will" churn — states risk score / relative ranking.
 
 ### Case 5 — infra/scaling question, should not touch live data
 
@@ -69,9 +69,20 @@ element is a finding, not necessarily a failure — but it should be explainable
 
 ### Case 6 — data-quality regression check
 
-**Question:** "Why did total revenue drop 90% this month?"
+**Question:** "Why did weekly active users drop 90% this week?"
 
 **Expected:**
 - `qa-reviewer` catches this before it's presented as a real trend if the cause is
-  a partial/incomplete current month (see `dashboard/queries.py`'s handling of
+  a partial/incomplete current week (see `dashboard/queries.py`'s handling of
   this exact case) rather than reporting the raw (misleading) number.
+
+### Case 7 — revenue-quality question, shouldn't be answered with a raw trend
+
+**Question:** "Are our existing customers expanding or shrinking?"
+
+**Expected:**
+- Recognized as a net-revenue-retention question (`growth-metrics-analysis`
+  skill), not answered with a plain MRR-over-time chart that conflates new-account
+  revenue with existing-account behavior.
+- Reports NRR and, ideally, breaks out how much came from expansion vs.
+  contraction/churn rather than one blended percentage.

@@ -10,9 +10,9 @@ implemented versus planned (see the callouts on each section).
 flowchart LR
     subgraph Sources
         CRM[CRM export]
-        Orders[Order system export]
+        Identity[Identity-provider export]
         Billing[Billing system export]
-        Product[Product analytics export]
+        Product[Product telemetry export]
     end
     Sources --> Raw[("data/raw/*.csv\n(landed, untouched)")]
     Raw --> ETL[pipelines/etl.py\ntransform + validate]
@@ -26,8 +26,9 @@ flowchart LR
 **Implemented:** everything above, against the local SQLite sample warehouse.
 **Planned for scale:** the "Sources" boxes are simulated by
 `scripts/export_raw_sources.py` today; a real deployment replaces them with actual
-CRM/order-system/billing exports (batch files or a streaming source) landing in the
-same `data/raw/` (or an object-store equivalent — S3/GCS/Blob) pattern.
+CRM/identity-provider/billing/product-telemetry exports (batch files or a
+streaming source) landing in the same `data/raw/` (or an object-store
+equivalent — S3/GCS/Blob) pattern.
 
 ## Security
 
@@ -38,7 +39,7 @@ same `data/raw/` (or an object-store equivalent — S3/GCS/Blob) pattern.
 - **Secrets never in code.** Connection strings live in the cloud's secret manager
   (see `docs/cloud-deployment.md`), referenced by the deployment config, never
   committed or hardcoded.
-- **PII handling.** The sample warehouse's `customers.email`/`name` are synthetic.
+- **PII handling.** The sample warehouse's `users.email`/`name` are synthetic.
   A real deployment should decide, per column, whether an analyst-facing agent
   needs raw PII or a masked/tokenized version — this is a data-platform-engineer
   decision made per-source, not something the agent layer should have to reason

@@ -11,7 +11,7 @@ single question.
 ## RAG: grounding metric definitions
 
 Reference: `knowledge/metrics_glossary.md` (source-of-truth definitions for
-ambiguous terms like "active customer", "revenue", "churn") and `rag/retrieve.py`
+ambiguous terms like "active user", "MRR", "net revenue retention") and `rag/retrieve.py`
 (TF-IDF retrieval over the glossary — no external API key required).
 
 When any agent's answer depends on an ambiguous term, retrieve the relevant glossary

@@ -2,112 +2,108 @@
 
 Three real runs against the warehouse produced by
 `scripts/export_raw_sources.py` → `pipelines/etl.py`, ordered from simplest to
-most involved. Each one is a question you'd actually ask a data analyst, answered
-by actually running the agents/skills against real data — not a mocked-up example.
+most involved. Each one is a question you'd actually ask a data/product analyst
+at a B2B SaaS company, answered by actually running the agents/skills against
+real data — not a mocked-up example.
 
 ---
 
-## 1. "Where are we losing customers, and what's that costing us?"
+## 1. "Is product engagement growing or shrinking?"
 
-*Agents: `analyst-lead` + `sql-engineer`, skill: `funnel-analysis`.*
+*Agents: `analyst-lead` + `sql-engineer`, skill: `growth-metrics-analysis`.*
 
-Of 800 people who sign up, only 322 (40%) ever buy anything. The leak isn't where
-you'd guess — it's not people bailing right after signup.
+**Weekly active users grew from 234 to 411 over the last 26 weeks — up 75.6%.**
+Engagement is trending up, not flattening or declining.
 
-| Stage | Customers | Drop from previous stage |
-|---|---|---|
-| Signed up | 800 | — |
-| Activated (used the product) | 617 | lost 183 (23%) |
-| Made a first purchase | 322 | **lost 295 (48%)** |
-
-**Why it matters:** almost half of everyone who activates — meaning they got in,
-tried it, presumably liked it enough to keep going — still never buys. That's a
-bigger, more fixable leak than the signup step, and the opposite of where most
-teams look first.
-
-**What it's worth:** the average first purchase is about $315. Closing even 10
-points of that activation→purchase gap (52% → 62%) is roughly **62 more paying
-customers and ~$19,500 in new revenue** from first orders alone.
+![Weekly active users trend](output/wau_trend.png)
 
 **Query used:**
 
 ```sql
-SELECT event_type, COUNT(DISTINCT customer_id) AS customers
-FROM events
-WHERE event_type IN ('signup', 'activated', 'first_purchase')
+SELECT strftime('%Y-%W', event_date) AS week, COUNT(DISTINCT user_id) AS wau
+FROM product_events
+WHERE event_type = 'login'
+GROUP BY 1
+ORDER BY 1;
+```
+
+**Caveats:** the most recent week in the raw data is partial and was excluded
+from the trend to avoid reading a false drop-off — see
+`.claude/skills/growth-metrics-analysis.md`.
+
+---
+
+## 2. "Where are we losing users before they actually try the product?"
+
+*Agents: `analyst-lead` + `sql-engineer`, skill: `funnel-analysis`.*
+
+Of 3,206 users who signed up, only 1,421 (44%) ever activated (created a
+project — the point where they've gone beyond onboarding and touched the core
+feature).
+
+| Stage | Users | Drop from previous stage |
+|---|---|---|
+| Signed up | 3,206 | — |
+| Completed onboarding | 2,295 | lost 911 (28%) |
+| Activated (created a project) | 1,421 | lost 874 (**38%**) |
+
+**Why it matters:** the biggest leak is after onboarding, not during it — users
+who finish the guided setup still don't reach the feature that makes the product
+useful. Accounts where fewer users activate also run a few points hotter on
+churn (46% vs. 42% average activation rate, active vs. churned accounts) — a
+real but modest signal, not a dramatic one, so it's reported as suggestive
+rather than proof that fixing activation alone would fix churn.
+
+**Query used:**
+
+```sql
+SELECT event_type, COUNT(DISTINCT user_id) AS users
+FROM product_events
+WHERE event_type IN ('signup', 'completed_onboarding', 'created_project')
 GROUP BY event_type;
 ```
 
-**Caveats:** this is a snapshot of who *has* reached each stage, not a cohort
-followed over time — a customer who signed up last week hasn't had time to reach
-"first purchase" yet, so very recent signups slightly understate the true
+**Caveats:** this counts everyone who *has* reached each stage, not a cohort
+followed over a fixed window — a user who signed up last week hasn't had as
+much time to activate yet, so very recent signups slightly understate the true
 eventual conversion rate.
 
 ---
 
-## 2. "How has revenue been trending over the last few months?"
-
-*Agents: `analyst-lead` + `sql-engineer`, skill: `revenue-trend-analysis`.*
-
-**Revenue grew 23.1% month-over-month in August 2026, the fastest growth rate in
-the last six months** — growth has been accelerating each month since April, not
-slowing.
-
-| Month | Revenue |
-|---|---|
-| 2026-03 | $118,503.53 |
-| 2026-04 | $125,044.31 |
-| 2026-05 | $147,408.54 |
-| 2026-06 | $154,633.30 |
-| 2026-07 | $204,715.98 |
-| 2026-08 | $252,104.59 |
-
-![Monthly revenue trend](output/revenue_trend.png)
-
-**Query used:**
-
-```sql
-WITH monthly AS (
-  SELECT strftime('%Y-%m', order_date) AS month, SUM(total_amount) AS revenue
-  FROM orders
-  WHERE status = 'completed'
-  GROUP BY 1
-)
-SELECT * FROM monthly ORDER BY month;
-```
-
-**Caveats:** September 2026 is a partial month and was excluded to avoid reading
-a false drop-off. Monthly order counts are small enough that a handful of large
-orders can meaningfully move the number — see `.claude/skills/anomaly-detection.md`.
-
----
-
-## 3. "Is our premium plan actually earning its price through better retention?"
+## 3. "Are we healthy overall, and which accounts need attention this quarter?"
 
 *Agents: `analyst-lead` → `data-scientist` (stats + ML), skill: `executive-summary`.*
 
-This one goes a step further than a lookup — it needed a significance test and a
-model, not just a query, so it's included to show what "wears multiple hats"
-looks like in practice.
+This one needed more than a lookup — a significance test and a model, not just
+a query — to show what "wears multiple hats" looks like in practice.
 
-Scale customers pay 10x what Starter customers pay (\$299 vs \$29/mo). Their churn
-rate (34.2%) looks a little better than Starter's (36.5%) — but a two-proportion
-significance test on that gap comes back **p = 0.69, not real, just noise** at
-this sample size. The premium price isn't buying meaningfully better retention.
+**Net revenue retention is 108.5%** among established accounts — expansion from
+existing accounts is outpacing churn and contraction combined, a healthy sign
+for a growing SaaS business. But that headline number hides real variation:
+**Starter-plan accounts churn at 28.8%, versus 6.7% for Enterprise** — the
+self-serve tier is where the risk actually concentrates.
 
-What *is* real: scoring every active Scale subscription with the churn model shows
-**21.6% of Scale's monthly revenue is risk-weighted-exposed**, and it's
-concentrated in one place — SMB customers are 51% of Scale's base but **80% of
-the highest-risk accounts**. Retention spend aimed at "all Scale customers" is
-diluted; aimed at that specific SMB slice, it's targeted.
+Does adopting an integration explain some of that difference? Accounts that
+never used an integration churned at 27.1%, versus 17.5% for accounts that did
+— a meaningful-looking 35% relative gap. But a two-proportion significance test
+comes back **p = 0.075, not quite significant at this sample size**
+(the no-integration group is only 59 accounts). Read as: promising, worth a
+real experiment before rolling out an integration-adoption push as an official
+retention strategy — not yet confirmed.
 
-**Method:** `sql-engineer` pulled plan-level churn/revenue;
-`experiments/ab_test.py`'s two-proportion z-test checked whether the churn gap
-was real; `ml/train_churn_model.py`'s classifier scored every active subscription,
-weighted by `monthly_price`, to find where the actual dollars are at risk.
+What *is* actionable now: scoring every active account with the churn model
+surfaces specific accounts to prioritize, not just a segment average — e.g. a
+12-seat Starter-plan Finance account with a 0.94 churn-risk score, several
+points higher than the segment's own average.
 
-**Caveats:** the churn model's accuracy is modest (AUC ~0.55–0.63 depending on
+**Method:** `sql-engineer` pulled plan-tier churn and NRR;
+`experiments/ab_test.py`'s two-proportion z-test checked the integration
+comparison; `ml/train_churn_model.py`'s classifier (built on engagement
+features — feature-adoption breadth, days since last login, not just plan/seat
+count) scored every active account.
+
+**Caveats:** the churn model's accuracy is modest (AUC ~0.65–0.67 depending on
 training run) — good enough to rank relative risk and target outreach, not
-good enough to treat any single customer's score as certain. The significance
-test is also underpowered at this sample size, so "not significant" here means
-"no evidence of a difference," not "proven equal."
+good enough to treat any single account's score as certain. The integration
+z-test is underpowered, so "not significant" here means "not yet confirmed,"
+not "proven to have no effect."

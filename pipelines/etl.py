@@ -25,56 +25,49 @@ DB_PATH = Path(__file__).resolve().parent.parent / "data" / "sample_warehouse.db
 
 def extract() -> dict[str, pd.DataFrame]:
     return {
-        "customers": pd.read_csv(RAW_DIR / "customers.csv"),
-        "products": pd.read_csv(RAW_DIR / "products.csv"),
-        "orders": pd.read_csv(RAW_DIR / "orders.csv"),
-        "order_items": pd.read_csv(RAW_DIR / "order_items.csv"),
+        "organizations": pd.read_csv(RAW_DIR / "organizations.csv"),
+        "users": pd.read_csv(RAW_DIR / "users.csv"),
         "subscriptions": pd.read_csv(RAW_DIR / "subscriptions.csv"),
-        "events": pd.read_csv(RAW_DIR / "events.csv"),
+        "product_events": pd.read_csv(RAW_DIR / "product_events.csv"),
     }
 
 
 def validate_raw(raw: dict[str, pd.DataFrame]) -> None:
     results = [
-        check_nulls(raw["customers"], ["id", "email", "signup_date"], "raw.customers"),
-        check_uniqueness(raw["customers"], ["id"], "raw.customers"),
-        check_nulls(raw["orders"], ["id", "customer_id", "order_date"], "raw.orders"),
-        check_referential_integrity(raw["orders"], "customer_id", raw["customers"], "id", "raw.orders -> raw.customers"),
-        check_referential_integrity(raw["order_items"], "order_id", raw["orders"], "id", "raw.order_items -> raw.orders"),
-        check_referential_integrity(raw["subscriptions"], "customer_id", raw["customers"], "id", "raw.subscriptions -> raw.customers"),
+        check_nulls(raw["organizations"], ["id", "name", "signed_up_date"], "raw.organizations"),
+        check_uniqueness(raw["organizations"], ["id"], "raw.organizations"),
+        check_nulls(raw["users"], ["id", "org_id", "email"], "raw.users"),
+        check_referential_integrity(raw["users"], "org_id", raw["organizations"], "id", "raw.users -> raw.organizations"),
+        check_referential_integrity(raw["subscriptions"], "org_id", raw["organizations"], "id", "raw.subscriptions -> raw.organizations"),
+        check_referential_integrity(raw["product_events"], "user_id", raw["users"], "id", "raw.product_events -> raw.users"),
     ]
-    # Raw customers is EXPECTED to fail uniqueness here — that's the simulated
-    # source-system overlap this pipeline exists to clean up in transform().
+    # Raw organizations is EXPECTED to fail uniqueness here — that's the
+    # simulated source-system overlap this pipeline exists to clean up in
+    # transform().
     run_checks_and_report(results, "raw extracts (pre-transform)")
 
 
 def transform(raw: dict[str, pd.DataFrame]) -> dict[str, pd.DataFrame]:
-    customers = raw["customers"].drop_duplicates(subset=["id"]).reset_index(drop=True)
+    organizations = raw["organizations"].drop_duplicates(subset=["id"]).reset_index(drop=True)
 
-    order_totals = (
-        raw["order_items"].assign(line_total=lambda df: df["quantity"] * df["unit_price"])
-        .groupby("order_id")["line_total"]
-        .sum()
-        .rename("total_amount")
-    )
-    orders = raw["orders"].merge(order_totals, left_on="id", right_index=True, how="left")
-    orders["total_amount"] = orders["total_amount"].fillna(0.0).round(2)
+    subscriptions = raw["subscriptions"].copy()
+    subscriptions["mrr"] = (subscriptions["current_seat_count"] * subscriptions["price_per_seat"]).round(2)
+    subscriptions.loc[subscriptions["status"] == "churned", "mrr"] = 0.0
+    subscriptions["initial_mrr"] = (subscriptions["initial_seat_count"] * subscriptions["price_per_seat"]).round(2)
 
     return {
-        "customers": customers,
-        "products": raw["products"],
-        "orders": orders,
-        "order_items": raw["order_items"],
-        "subscriptions": raw["subscriptions"],
-        "events": raw["events"],
+        "organizations": organizations,
+        "users": raw["users"],
+        "subscriptions": subscriptions,
+        "product_events": raw["product_events"],
     }
 
 
 def validate_transformed(tables: dict[str, pd.DataFrame]) -> bool:
     results = [
-        check_uniqueness(tables["customers"], ["id"], "transformed.customers"),
-        check_nulls(tables["orders"], ["total_amount"], "transformed.orders"),
-        check_referential_integrity(tables["order_items"], "product_id", tables["products"], "id", "order_items -> products"),
+        check_uniqueness(tables["organizations"], ["id"], "transformed.organizations"),
+        check_nulls(tables["subscriptions"], ["mrr", "initial_mrr"], "transformed.subscriptions"),
+        check_referential_integrity(tables["product_events"], "org_id", tables["organizations"], "id", "product_events -> organizations"),
     ]
     return run_checks_and_report(results, "transformed tables (pre-load)")
 
@@ -86,22 +79,20 @@ def load(tables: dict[str, pd.DataFrame]) -> None:
     try:
         conn.executescript(
             """
-            CREATE TABLE customers (id INTEGER PRIMARY KEY, name TEXT, email TEXT, signup_date TEXT, region TEXT, segment TEXT);
-            CREATE TABLE products (id INTEGER PRIMARY KEY, name TEXT, category TEXT, price REAL);
-            CREATE TABLE orders (id INTEGER PRIMARY KEY, customer_id INTEGER REFERENCES customers(id), order_date TEXT, status TEXT, total_amount REAL);
-            CREATE TABLE order_items (id INTEGER PRIMARY KEY, order_id INTEGER REFERENCES orders(id), product_id INTEGER REFERENCES products(id), quantity INTEGER, unit_price REAL);
-            CREATE TABLE subscriptions (id INTEGER PRIMARY KEY, customer_id INTEGER REFERENCES customers(id), plan TEXT, monthly_price REAL, start_date TEXT, end_date TEXT, status TEXT);
-            CREATE TABLE events (id INTEGER PRIMARY KEY, customer_id INTEGER REFERENCES customers(id), event_type TEXT, event_date TEXT);
+            CREATE TABLE organizations (id INTEGER PRIMARY KEY, name TEXT, industry TEXT, region TEXT, signed_up_date TEXT);
+            CREATE TABLE users (id INTEGER PRIMARY KEY, org_id INTEGER REFERENCES organizations(id), name TEXT, email TEXT, role TEXT, joined_date TEXT);
+            CREATE TABLE subscriptions (
+                id INTEGER PRIMARY KEY, org_id INTEGER REFERENCES organizations(id), plan_tier TEXT,
+                price_per_seat REAL, initial_seat_count INTEGER, current_seat_count INTEGER,
+                start_date TEXT, end_date TEXT, status TEXT, mrr REAL, initial_mrr REAL
+            );
+            CREATE TABLE product_events (id INTEGER PRIMARY KEY, user_id INTEGER REFERENCES users(id), org_id INTEGER REFERENCES organizations(id), event_type TEXT, event_date TEXT);
             """
         )
-        tables["customers"].to_sql("customers", conn, if_exists="append", index=False)
-        tables["products"].to_sql("products", conn, if_exists="append", index=False)
-        tables["orders"][["id", "customer_id", "order_date", "status", "total_amount"]].to_sql(
-            "orders", conn, if_exists="append", index=False
-        )
-        tables["order_items"].to_sql("order_items", conn, if_exists="append", index=False)
+        tables["organizations"].to_sql("organizations", conn, if_exists="append", index=False)
+        tables["users"].to_sql("users", conn, if_exists="append", index=False)
         tables["subscriptions"].to_sql("subscriptions", conn, if_exists="append", index=False)
-        tables["events"].to_sql("events", conn, if_exists="append", index=False)
+        tables["product_events"].to_sql("product_events", conn, if_exists="append", index=False)
         conn.commit()
     finally:
         conn.close()
@@ -110,11 +101,11 @@ def load(tables: dict[str, pd.DataFrame]) -> None:
 def validate_loaded() -> bool:
     from connectors.warehouse import run_query
 
-    customers = run_query("SELECT * FROM customers")
-    orders = run_query("SELECT * FROM orders")
+    organizations = run_query("SELECT * FROM organizations")
+    subscriptions = run_query("SELECT * FROM subscriptions")
     results = [
-        check_uniqueness(customers, ["id"], "warehouse.customers"),
-        check_nulls(orders, ["total_amount"], "warehouse.orders"),
+        check_uniqueness(organizations, ["id"], "warehouse.organizations"),
+        check_nulls(subscriptions, ["mrr"], "warehouse.subscriptions"),
     ]
     return run_checks_and_report(results, "warehouse (post-load)")
 
