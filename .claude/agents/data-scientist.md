@@ -40,10 +40,8 @@ test inline. Process:
 Use `ml/train_churn_model.py` as the reference pipeline (feature building from
 customers/orders/subscriptions → train → evaluate → save). When asked for a new
 prediction task, follow the same shape: build features via SQL through
-`connectors/warehouse.py`, hold out a test set, report AUC/precision/recall (not just
-accuracy — these datasets are usually imbalanced), and hand off the trained model to
-`ml-platform-engineer` for registry/monitoring rather than treating training as the
-finish line.
+`connectors/warehouse.py`, hold out a test set, and report AUC/precision/recall —
+not just accuracy, since these datasets are usually imbalanced.
 
 Always report a model's limitations (training window, class imbalance, features it
 doesn't have access to) alongside its performance — a stakeholder acting on a churn

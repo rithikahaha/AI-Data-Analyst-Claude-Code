@@ -2,8 +2,7 @@
 
 Reference pipeline for the data-scientist agent: build features via SQL, hold out
 a test set, evaluate on AUC/precision/recall (not accuracy — churn is imbalanced),
-save the fitted pipeline + metrics, and hand off to ml-platform-engineer via
-ml/registry.py rather than treating a saved model file as the finish line.
+and save the fitted pipeline + metrics.
 """
 
 import json
@@ -84,10 +83,6 @@ def main() -> None:
         "target": TARGET_COLUMN,
         "model_type": "GradientBoostingClassifier",
         "metrics": metrics,
-        "training_feature_snapshot": {
-            col: {"mean": float(X_train[col].mean()), "std": float(X_train[col].std())}
-            for col in NUMERIC_FEATURES
-        },
     }
     METADATA_PATH.write_text(json.dumps(metadata, indent=2))
 
@@ -95,10 +90,6 @@ def main() -> None:
     print(json.dumps(metrics, indent=2))
     print(f"\nSaved model to {MODEL_PATH}")
     print(f"Saved metadata to {METADATA_PATH}")
-
-    from ml.registry import register_model
-
-    register_model(model_path=MODEL_PATH, metadata=metadata)
 
 
 if __name__ == "__main__":

@@ -1,6 +1,6 @@
-import pytest
+import json
 
-from ml.features import CATEGORICAL_FEATURES, FEATURE_COLUMNS, NUMERIC_FEATURES, TARGET_COLUMN, build_feature_frame
+from ml.features import FEATURE_COLUMNS, TARGET_COLUMN, build_feature_frame
 
 
 def test_feature_frame_has_expected_columns():
@@ -19,27 +19,13 @@ def test_feature_frame_not_empty():
     assert len(df) > 0
 
 
-@pytest.fixture(scope="module")
-def trained_model():
+def test_train_churn_model_saves_model_and_metrics():
+    from ml.train_churn_model import METADATA_PATH, MODEL_PATH
     from ml.train_churn_model import main as train_main
 
     train_main()
 
-
-def test_train_and_check_drift_end_to_end(trained_model):
-    from ml.check_drift import check_drift
-
-    report = check_drift()
-    assert "any_drift" in report
-    # A freshly-trained model checked against the same data it trained on
-    # should not report drift.
-    assert report["any_drift"] is False
-
-
-def test_registry_has_active_model_after_training(trained_model):
-    from ml.registry import get_active_model
-
-    active = get_active_model()
-    assert active is not None
-    assert set(FEATURE_COLUMNS) <= set(active["feature_columns"])
-    assert 0.0 <= active["metrics"]["auc"] <= 1.0
+    assert MODEL_PATH.exists()
+    metadata = json.loads(METADATA_PATH.read_text())
+    assert set(FEATURE_COLUMNS) <= set(metadata["feature_columns"])
+    assert 0.0 <= metadata["metrics"]["auc"] <= 1.0

@@ -50,7 +50,7 @@ flowchart LR
     Lead -->|ambiguous term| AI[ai-engineer]
     SQL --> WH[(Warehouse)]
     DS --> WH
-    DS --> Model[(ml/registry.py)]
+    DS --> Model[ml/train_churn_model.py]
     WH --> QA[qa-reviewer]
     QA --> Viz[data-visualizer]
     Viz --> Lead
@@ -113,17 +113,10 @@ know or care which one you're "talking to":
 | [`data-platform-engineer`](.claude/agents/data-platform-engineer.md) | Pipelines, data quality, cloud deployment, system design | `pipelines/`, `infra/`, `docs/ARCHITECTURE.md` |
 | [`ai-engineer`](.claude/agents/ai-engineer.md) | Grounding ambiguous metric definitions, agent/skill quality | `rag/`, `knowledge/`, `evals/` |
 | [`qa-reviewer`](.claude/agents/qa-reviewer.md) | Per-answer sanity checks, test suite, CI | `tests/`, `.github/workflows/ci.yml` |
-| [`ml-platform-engineer`](.claude/agents/ml-platform-engineer.md) | Keeping a shipped model trustworthy over time (registry, drift) | `ml/registry.py`, `ml/check_drift.py` |
 
 `.claude/skills/` holds the reusable playbooks these agents follow: schema
 exploration, revenue trend analysis, cohort retention, funnel analysis, anomaly
 detection, executive-summary formatting.
-
-**On that last row:** MLOps is really a stretch past what a Data Analyst role
-asks for — it's here because keeping a model honest once it's shipped is a real
-2026 skill worth having on the shelf, not because it's core to the job. If you're
-optimizing this repo purely as a Data Analyst portfolio piece, the first seven
-rows are the ones doing that work.
 
 - **`connectors/warehouse.py`** — the one place all SQL goes through. Read-only
   by construction (rejects anything but `SELECT`/`WITH`/`EXPLAIN`). Defaults to

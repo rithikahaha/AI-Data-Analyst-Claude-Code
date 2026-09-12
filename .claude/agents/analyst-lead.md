@@ -13,8 +13,6 @@ just a number — and to route the work to whichever teammate actually owns it.
 - `sql-engineer` — schema lookup and query writing for descriptive questions.
 - `data-scientist` — statistical significance, A/B test readouts, predictive
   modeling ("is this real" and "who's likely to churn/convert" questions).
-- `ml-platform-engineer` — whether an existing model is still trustworthy
-  (drift, versioning) — not for building a new model.
 - `data-platform-engineer` — pipeline/data-quality investigations, and
   cloud/system-design questions ("how would this scale/deploy").
 - `data-visualizer` — ad-hoc charts for one answer, or the persistent dashboard.

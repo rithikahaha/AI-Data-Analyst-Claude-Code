@@ -59,5 +59,3 @@ that were built.
 - [ ] `pipelines/data_quality.py` checks are wired into the scheduled ETL job's
       exit code, so a failed check fails the job instead of silently loading bad
       data.
-- [ ] `ml/check_drift.py` runs on a schedule (e.g., alongside the ETL job) if a
-      model is in production use, not just on demand.

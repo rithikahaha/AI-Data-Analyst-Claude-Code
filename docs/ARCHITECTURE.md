@@ -20,7 +20,6 @@ flowchart LR
     WH --> Agents[Agent team\n.claude/agents]
     WH --> Dashboard[dashboard/app.py]
     WH --> Model[ml/train_churn_model.py]
-    Model --> Registry[(ml/registry.py)]
     Agents --> Answer["Plain-English answer\n+ SQL + chart + caveats"]
 ```
 
@@ -55,9 +54,6 @@ same `data/raw/` (or an object-store equivalent — S3/GCS/Blob) pattern.
 - **Agent action audit log.** Which agent ran, what it delegated to, what it
   returned — useful both for debugging a bad answer and for the `ai-engineer`
   eval process in `evals/eval_cases.md`.
-- **Model monitoring.** `ml/check_drift.py` run on a schedule (see the production
-  checklist in `docs/cloud-deployment.md`), with alerting when drift crosses the
-  threshold, rather than only checked on demand.
 
 ## Scaling agent orchestration
 
@@ -74,9 +70,9 @@ to design around is redundant work, not correctness:
   `sql-engineer` lookup — route heavier work through a queue so the two don't
   compete for the same latency budget.
 - **Stateless agents, stateful warehouse.** Agents themselves hold no state between
-  questions (session context aside) — all durable state is the warehouse and the
-  model registry, which is what makes horizontal scaling of the "many stakeholders
-  asking at once" case straightforward: add capacity, don't shard state.
+  questions (session context aside) — all durable state is the warehouse, which is
+  what makes horizontal scaling of the "many stakeholders asking at once" case
+  straightforward: add capacity, don't shard state.
 
 ## What's explicitly out of scope
 

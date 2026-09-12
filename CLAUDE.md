@@ -9,10 +9,10 @@ answer backed by real SQL, statistics, a model, or a chart.
 
 - `.claude/agents/` — one agent per real team role: `analyst-lead` (orchestrator),
   `sql-engineer` (queries), `data-scientist` (stats/A-B testing/ML modeling),
-  `ml-platform-engineer` (model registry/drift), `data-platform-engineer`
-  (pipelines/data quality/cloud/system design), `data-visualizer` (BI/dashboard),
-  `ai-engineer` (RAG grounding + agent/skill governance), `qa-reviewer` (per-query
-  QA + test suite/CI). Claude Code loads these automatically.
+  `data-platform-engineer` (pipelines/data quality/cloud/system design),
+  `data-visualizer` (BI/dashboard), `ai-engineer` (RAG grounding + agent/skill
+  governance), `qa-reviewer` (per-query QA + test suite/CI). Claude Code loads
+  these automatically.
 - `.claude/skills/` — reusable analysis playbooks (cohort retention, revenue trend,
   funnel analysis, anomaly detection, executive summary formatting). Invoke with
   `/skill-name` or let an agent invoke them.
@@ -26,8 +26,7 @@ answer backed by real SQL, statistics, a model, or a chart.
   transform, so the whole system works out of the box with no external credentials.
 - `stats/`, `experiments/` — significance testing and A/B test readouts, used by
   `data-scientist`.
-- `ml/` — churn model training, registry, and drift detection, used by
-  `data-scientist` and `ml-platform-engineer`.
+- `ml/` — churn model training and feature building, used by `data-scientist`.
 - `dashboard/` — the standing Streamlit app and its published-Artifact companion,
   owned by `data-visualizer`.
 - `rag/`, `knowledge/metrics_glossary.md` — grounds ambiguous metric definitions,
@@ -55,9 +54,6 @@ answer backed by real SQL, statistics, a model, or a chart.
   significance question should go through `data-scientist`'s
   `stats/`/`experiments/` modules, with an effect size and confidence interval —
   not just a raw comparison of two numbers.
-- **Model governance isn't optional.** Every trained model gets registered via
-  `ml/registry.py`; never treat a saved `.joblib` file with no registry entry as
-  production-ready.
 - **Infrastructure changes are proposals, not actions.** `data-platform-engineer`
   produces Terraform and docs under `infra/`/`docs/` — it never provisions, alters,
   or tears down real cloud resources from within this repo.

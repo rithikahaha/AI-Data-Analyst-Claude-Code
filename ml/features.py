@@ -1,5 +1,5 @@
 """Feature building for the churn model — shared between training
-(ml/train_churn_model.py) and drift checking (ml/check_drift.py) so both see the
+(ml/train_churn_model.py) and scoring (dashboard/queries.py) so both see the
 exact same feature definition.
 """
 
