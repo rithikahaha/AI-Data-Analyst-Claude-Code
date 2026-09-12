@@ -1,24 +1,57 @@
-# Example session
+# Example sessions
 
-This is a real run against the warehouse produced by the
-`scripts/export_raw_sources.py` → `pipelines/etl.py` pipeline, using the
-`analyst-lead` agent and `revenue-trend-analysis` skill.
+Three real runs against the warehouse produced by
+`scripts/export_raw_sources.py` → `pipelines/etl.py`, ordered from simplest to
+most involved. Each one is a question you'd actually ask a data analyst, answered
+by actually running the agents/skills against real data — not a mocked-up example.
 
-## Question
+---
 
-> "How has revenue been trending over the last few months, and is growth
-> accelerating or slowing?"
+## 1. "Where are we losing customers, and what's that costing us?"
 
-## Answer
+*Agents: `analyst-lead` + `sql-engineer`, skill: `funnel-analysis`.*
 
-**Revenue grew 23.1% month-over-month in August 2026, the fastest growth rate in the
-last six months** — growth has been accelerating each month since April, not slowing.
+Of 800 people who sign up, only 322 (40%) ever buy anything. The leak isn't where
+you'd guess — it's not people bailing right after signup.
 
-**Why it matters:** this isn't a one-off spike; the acceleration has held for four
-consecutive months (April → Aug), which is worth understanding before planning
-capacity/hiring against a flatter forecast.
+| Stage | Customers | Drop from previous stage |
+|---|---|---|
+| Signed up | 800 | — |
+| Activated (used the product) | 617 | lost 183 (23%) |
+| Made a first purchase | 322 | **lost 295 (48%)** |
 
-**Evidence:**
+**Why it matters:** almost half of everyone who activates — meaning they got in,
+tried it, presumably liked it enough to keep going — still never buys. That's a
+bigger, more fixable leak than the signup step, and the opposite of where most
+teams look first.
+
+**What it's worth:** the average first purchase is about $315. Closing even 10
+points of that activation→purchase gap (52% → 62%) is roughly **62 more paying
+customers and ~$19,500 in new revenue** from first orders alone.
+
+**Query used:**
+
+```sql
+SELECT event_type, COUNT(DISTINCT customer_id) AS customers
+FROM events
+WHERE event_type IN ('signup', 'activated', 'first_purchase')
+GROUP BY event_type;
+```
+
+**Caveats:** this is a snapshot of who *has* reached each stage, not a cohort
+followed over time — a customer who signed up last week hasn't had time to reach
+"first purchase" yet, so very recent signups slightly understate the true
+eventual conversion rate.
+
+---
+
+## 2. "How has revenue been trending over the last few months?"
+
+*Agents: `analyst-lead` + `sql-engineer`, skill: `revenue-trend-analysis`.*
+
+**Revenue grew 23.1% month-over-month in August 2026, the fastest growth rate in
+the last six months** — growth has been accelerating each month since April, not
+slowing.
 
 | Month | Revenue |
 |---|---|
@@ -43,11 +76,38 @@ WITH monthly AS (
 SELECT * FROM monthly ORDER BY month;
 ```
 
-Revenue is defined as gross value of `completed` orders (`orders.total_amount`),
-excluding `refunded`/`cancelled` orders.
+**Caveats:** September 2026 is a partial month and was excluded to avoid reading
+a false drop-off. Monthly order counts are small enough that a handful of large
+orders can meaningfully move the number — see `.claude/skills/anomaly-detection.md`.
 
-**Caveats:** September 2026 is a partial month in the source data and was excluded
-from the trend to avoid reading a false drop-off. Sample size per month (a few
-hundred orders) is small enough that a handful of large orders can meaningfully move
-the MoM number — see `.claude/skills/anomaly-detection.md` for how the QA pass
-checks for that.
+---
+
+## 3. "Is our premium plan actually earning its price through better retention?"
+
+*Agents: `analyst-lead` → `data-scientist` (stats + ML), skill: `executive-summary`.*
+
+This one goes a step further than a lookup — it needed a significance test and a
+model, not just a query, so it's included to show what "wears multiple hats"
+looks like in practice.
+
+Scale customers pay 10x what Starter customers pay (\$299 vs \$29/mo). Their churn
+rate (34.2%) looks a little better than Starter's (36.5%) — but a two-proportion
+significance test on that gap comes back **p = 0.69, not real, just noise** at
+this sample size. The premium price isn't buying meaningfully better retention.
+
+What *is* real: scoring every active Scale subscription with the churn model shows
+**21.6% of Scale's monthly revenue is risk-weighted-exposed**, and it's
+concentrated in one place — SMB customers are 51% of Scale's base but **80% of
+the highest-risk accounts**. Retention spend aimed at "all Scale customers" is
+diluted; aimed at that specific SMB slice, it's targeted.
+
+**Method:** `sql-engineer` pulled plan-level churn/revenue;
+`experiments/ab_test.py`'s two-proportion z-test checked whether the churn gap
+was real; `ml/train_churn_model.py`'s classifier scored every active subscription,
+weighted by `monthly_price`, to find where the actual dollars are at risk.
+
+**Caveats:** the churn model's accuracy is modest (AUC ~0.55–0.63 depending on
+training run) — good enough to rank relative risk and target outreach, not
+good enough to treat any single customer's score as certain. The significance
+test is also underpowered at this sample size, so "not significant" here means
+"no evidence of a difference," not "proven equal."
