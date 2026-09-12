@@ -1,5 +1,7 @@
 # AI Data Analyst with Claude Code
 
+**[Live dashboard](https://ai-data-analyst-claude-code.streamlit.app/)**
+
 > You ask a business question in plain English. A team
 > of AI agents (built on Claude Code) figures out whether it needs SQL, a
 > statistics test, or a machine learning model, then answers with real
