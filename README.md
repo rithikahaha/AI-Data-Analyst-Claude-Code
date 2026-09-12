@@ -27,15 +27,18 @@ question through six phases, Ask, Prepare, Process, Analyze, Share, Act,
 routing each one to whichever specialist owns it:
 
 ```mermaid
-flowchart TD
-    Q["Business question"] --> Ask["Ask: understand the real problem"]
-    Ask --> Prepare["Prepare: find the right data"]
-    Prepare --> Process["Process: clean and validate"]
-    Process --> Analyze["Analyze: SQL, stats, or ML"]
-    Analyze --> Share["Share: chart if it helps"]
-    Share --> Act["Act: plain answer plus so-what"]
-    Act --> A["Answer with SQL, chart, and caveats"]
+flowchart LR
+    Q[Business question] --> Ask[Ask] --> Prepare[Prepare] --> Process[Process] --> Analyze[Analyze] --> Share[Share] --> Act[Act] --> A[Answer]
 ```
+
+| Phase | What happens |
+|---|---|
+| Ask | Understand the real problem, not just the literal question |
+| Prepare | Find the right data and confirm it's trustworthy |
+| Process | Clean and validate before trusting any number |
+| Analyze | SQL, statistics, or ML, whichever the question needs |
+| Share | A chart, if it makes the answer clearer |
+| Act | A plain answer plus the business "so what" |
 
 Why split it into agents instead of one giant prompt? Because a single prompt
 trying to be equally good at SQL, statistics, ML, cloud, and QA gets mushy.

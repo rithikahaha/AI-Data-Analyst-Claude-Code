@@ -7,21 +7,27 @@ implemented versus planned (see the callouts on each section).
 ## Data flow
 
 ```mermaid
-flowchart TD
+flowchart LR
     subgraph Sources
         CRM[CRM export]
-        Identity[Identity-provider export]
-        Billing[Billing system export]
-        Product[Product telemetry export]
+        Identity[Identity export]
+        Billing[Billing export]
+        Product[Product telemetry]
     end
-    Sources --> Raw["data/raw/*.csv, landed and untouched"]
-    Raw --> ETL[pipelines/etl.py: transform and validate]
-    ETL --> WH[Warehouse via connectors/warehouse.py]
-    WH --> Agents[Agent team in .claude/agents]
-    WH --> Dashboard[dashboard/app.py]
-    WH --> Model[ml/train_churn_model.py]
-    Agents --> Answer["Plain-English answer with SQL, chart, and caveats"]
+    Sources --> Raw[Raw CSV landing]
+    Raw --> ETL[ETL: transform + validate]
+    ETL --> WH[Warehouse]
+    WH --> Agents[Agent team]
+    WH --> Dashboard[Dashboard]
+    WH --> Model[Churn model]
+    Agents --> Answer[Plain-English answer]
 ```
+
+Sources land in `data/raw/*.csv` untouched, `pipelines/etl.py` transforms and
+validates them, and the result lands in the warehouse via
+`connectors/warehouse.py`, which the agent team (`.claude/agents/`), the
+dashboard (`dashboard/app.py`), and the churn model
+(`ml/train_churn_model.py`) all read from.
 
 **Implemented:** everything above, against the local SQLite sample warehouse.
 **Planned for scale:** the "Sources" boxes are simulated by
