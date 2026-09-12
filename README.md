@@ -22,28 +22,27 @@ Full write-ups with the real SQL and caveats: [`examples/example_qna.md`](exampl
 
 ## What this actually is (in one picture)
 
+You only ever talk to **one thing**: `analyst-lead`. Internally it works the
+question the way an actual analyst is trained to, the six-phase process from
+the Google Data Analytics Certificate (Ask, Prepare, Process, Analyze, Share,
+Act), routing each phase to whichever specialist owns it:
+
 ```mermaid
 flowchart LR
-    Q["Business question"] --> Lead[analyst-lead]
-    Lead -->|descriptive| SQL[sql-engineer]
-    Lead -->|significance / ML| DS[data-scientist]
-    Lead -->|infra / scaling| DPE[data-platform-engineer]
-    Lead -->|ambiguous term| AI[ai-engineer]
-    SQL --> WH[(Warehouse)]
-    DS --> WH
-    DS --> Model[ml/train_churn_model.py]
-    WH --> QA[qa-reviewer]
-    QA --> Viz[data-visualizer]
-    Viz --> Lead
-    Lead --> A["Plain-English answer\n+ SQL + chart + caveats"]
+    Q["Business question"] --> Ask["Ask\nunderstand the real problem"]
+    Ask --> Prepare["Prepare\nfind the right data"]
+    Prepare --> Process["Process\nclean + validate"]
+    Process --> Analyze["Analyze\nSQL, stats, or ML"]
+    Analyze --> Share["Share\nchart if it helps"]
+    Share --> Act["Act\nplain answer + so-what"]
+    Act --> A["Answer + SQL + chart + caveats"]
 ```
 
-You only ever talk to **one thing**: `analyst-lead`. It routes internally to
-whichever specialist actually owns the question. Why split it up instead of
-using one giant prompt? Because a single prompt trying to be equally good at
-SQL, statistics, ML, cloud, and QA gets mushy. Splitting it is what lets one
-analyst credibly cover the whole 2026 skillset without being mediocre at all
-of it.
+Why split it into agents instead of one giant prompt? Because a single prompt
+trying to be equally good at SQL, statistics, ML, cloud, and QA gets mushy.
+Splitting it is what lets one analyst credibly cover the whole 2026 skillset
+without being mediocre at all of it. The full agent-to-phase mapping is in
+[`analyst-lead`](.claude/agents/analyst-lead.md)'s own instructions.
 
 ## Built with AI. Here's where I caught it being wrong.
 

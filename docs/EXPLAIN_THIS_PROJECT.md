@@ -24,6 +24,28 @@ tests."
 
 Keep it to those 3-4 sentences. If they want more, they'll ask.
 
+## 1b. "Walk me through the actual steps it takes to answer a question."
+
+**What they're really asking:** Did you just wire up a chatbot, or do you
+actually understand the analyst workflow you're automating?
+
+**Your answer:**
+"I structured it around the same six-phase process from the Google Data
+Analytics Certificate: Ask, Prepare, Process, Analyze, Share, Act. Ask means
+understanding the real business problem, not just the literal question, and
+grounding any ambiguous term against a glossary instead of guessing. Prepare
+means confirming the right data actually exists before analyzing it. Process
+is data-quality checks, nulls, duplicate joins, referential integrity, before
+trusting any number. Analyze is the SQL, statistics, or ML. Share is the
+chart, when one actually helps. Act is closing with the business implication,
+not just restating a stat. Each phase routes to whichever agent owns it,
+that's literally how `analyst-lead` is written."
+
+This is a strong answer specifically because it shows you didn't skip the
+"boring" phases (Prepare, Process) that people forget when they're excited
+about the AI part. Naming the Google framework by name also quietly confirms
+your certification isn't just a line item, you actually applied it.
+
 ## 2. "AI can write SQL and build dashboards. Why does this need you?"
 
 **What they're really asking:** This is the defining 2026 question. Do you
