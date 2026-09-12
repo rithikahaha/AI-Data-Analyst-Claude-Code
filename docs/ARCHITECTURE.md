@@ -7,20 +7,20 @@ implemented versus planned (see the callouts on each section).
 ## Data flow
 
 ```mermaid
-flowchart LR
+flowchart TD
     subgraph Sources
         CRM[CRM export]
         Identity[Identity-provider export]
         Billing[Billing system export]
         Product[Product telemetry export]
     end
-    Sources --> Raw[("data/raw/*.csv\n(landed, untouched)")]
-    Raw --> ETL[pipelines/etl.py\ntransform + validate]
-    ETL --> WH[(Warehouse\nconnectors/warehouse.py)]
-    WH --> Agents[Agent team\n.claude/agents]
+    Sources --> Raw["data/raw/*.csv, landed and untouched"]
+    Raw --> ETL[pipelines/etl.py: transform and validate]
+    ETL --> WH[Warehouse via connectors/warehouse.py]
+    WH --> Agents[Agent team in .claude/agents]
     WH --> Dashboard[dashboard/app.py]
     WH --> Model[ml/train_churn_model.py]
-    Agents --> Answer["Plain-English answer\n+ SQL + chart + caveats"]
+    Agents --> Answer["Plain-English answer with SQL, chart, and caveats"]
 ```
 
 **Implemented:** everything above, against the local SQLite sample warehouse.

@@ -23,19 +23,18 @@ Full write-ups with the real SQL and caveats: [`examples/example_qna.md`](exampl
 ## What this actually is (in one picture)
 
 You only ever talk to **one thing**: `analyst-lead`. Internally it works the
-question the way an actual analyst is trained to, the six-phase process from
-the Google Data Analytics Certificate (Ask, Prepare, Process, Analyze, Share,
-Act), routing each phase to whichever specialist owns it:
+question through six phases, Ask, Prepare, Process, Analyze, Share, Act,
+routing each one to whichever specialist owns it:
 
 ```mermaid
-flowchart LR
-    Q["Business question"] --> Ask["Ask\nunderstand the real problem"]
-    Ask --> Prepare["Prepare\nfind the right data"]
-    Prepare --> Process["Process\nclean + validate"]
-    Process --> Analyze["Analyze\nSQL, stats, or ML"]
-    Analyze --> Share["Share\nchart if it helps"]
-    Share --> Act["Act\nplain answer + so-what"]
-    Act --> A["Answer + SQL + chart + caveats"]
+flowchart TD
+    Q["Business question"] --> Ask["Ask: understand the real problem"]
+    Ask --> Prepare["Prepare: find the right data"]
+    Prepare --> Process["Process: clean and validate"]
+    Process --> Analyze["Analyze: SQL, stats, or ML"]
+    Analyze --> Share["Share: chart if it helps"]
+    Share --> Act["Act: plain answer plus so-what"]
+    Act --> A["Answer with SQL, chart, and caveats"]
 ```
 
 Why split it into agents instead of one giant prompt? Because a single prompt
