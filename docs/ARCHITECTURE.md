@@ -6,28 +6,16 @@ implemented versus planned (see the callouts on each section).
 
 ## Data flow
 
-```mermaid
-flowchart LR
-    subgraph Sources
-        CRM[CRM export]
-        Identity[Identity export]
-        Billing[Billing export]
-        Product[Product telemetry]
-    end
-    Sources --> Raw[Raw CSV landing]
-    Raw --> ETL[ETL: transform + validate]
-    ETL --> WH[Warehouse]
-    WH --> Agents[Agent team]
-    WH --> Dashboard[Dashboard]
-    WH --> Model[Churn model]
-    Agents --> Answer[Plain-English answer]
-```
-
-Sources land in `data/raw/*.csv` untouched, `pipelines/etl.py` transforms and
-validates them, and the result lands in the warehouse via
-`connectors/warehouse.py`, which the agent team (`.claude/agents/`), the
-dashboard (`dashboard/app.py`), and the churn model
-(`ml/train_churn_model.py`) all read from.
+1. **Sources**: CRM export, identity-provider export, billing export, product
+   telemetry export.
+2. &rarr; **Raw CSV landing** (`data/raw/*.csv`, untouched).
+3. &rarr; **ETL** (`pipelines/etl.py`: transform and validate).
+4. &rarr; **Warehouse** (`connectors/warehouse.py`).
+5. The warehouse feeds three consumers: the **agent team** (`.claude/agents/`),
+   the **dashboard** (`dashboard/app.py`), and the **churn model**
+   (`ml/train_churn_model.py`).
+6. The agent team turns its query results into the **plain-English answer**
+   a stakeholder actually sees.
 
 **Implemented:** everything above, against the local SQLite sample warehouse.
 **Planned for scale:** the "Sources" boxes are simulated by

@@ -26,10 +26,7 @@ You only ever talk to **one thing**: `analyst-lead`. Internally it works the
 question through six phases, Ask, Prepare, Process, Analyze, Share, Act,
 routing each one to whichever specialist owns it:
 
-```mermaid
-flowchart LR
-    Q[Business question] --> Ask[Ask] --> Prepare[Prepare] --> Process[Process] --> Analyze[Analyze] --> Share[Share] --> Act[Act] --> A[Answer]
-```
+**Business question &rarr; Ask &rarr; Prepare &rarr; Process &rarr; Analyze &rarr; Share &rarr; Act &rarr; Answer**
 
 | Phase | What happens |
 |---|---|
