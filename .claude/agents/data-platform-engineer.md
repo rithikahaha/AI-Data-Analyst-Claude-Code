@@ -22,6 +22,19 @@ When asked to add or debug a data source:
 3. Run data-quality checks and fail loudly (not silently drop bad rows) when a check
    fails in a way that would corrupt downstream analysis.
 
+## Ongoing monitoring
+
+Reference: `pipelines/monitor.py`, run on a schedule
+(`.github/workflows/monitor.yml`), not only at load time. `pipelines/data_quality.py`
+catches a bad *load*; this catches a pipeline that's quietly stopped working between
+loads, before a stakeholder asks a question and gets a wrong answer from stale or
+missing data. It checks whether one table is falling behind another it should track
+closely, whether any calendar month in the data has an unexplained gap, and whether
+the most recently completed month's volume dropped sharply against its own trailing
+average. When asked to add a new monitored table or metric, follow the same
+data-in/report-out shape so the check stays testable with synthetic rows, not just
+against the live warehouse.
+
 ## Semantic layer (dbt)
 
 Reference: `dbt/` (see `dbt/README.md`), a parallel demonstration of the same

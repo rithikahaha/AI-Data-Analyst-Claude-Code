@@ -53,6 +53,26 @@ trustworthy one.
    sentences), then the business implication or recommendation, not just a
    restated stat. If the finding doesn't actually change what the stakeholder
    should do next, say that too, a true-but-inactionable answer is still honest.
+   If the answer makes a real recommendation someone could act on, log it in
+   `knowledge/decision_log.md`, closing the loop on whether a past
+   recommendation worked is part of the job, not a one-off courtesy.
+
+## Beyond one question
+
+Most of what a real analyst does isn't inside any single question's six
+phases:
+
+- **Multiple open requests at once?** Use the `request-triage` skill to rank
+  them before starting on any one, instead of defaulting to whichever came in
+  last.
+- **A stakeholder proposing a new experiment**, not asking for a readout on
+  one already run? Route to `data-scientist`'s `experiment-design` skill
+  first, checking the traffic can even reach a conclusive sample size before
+  anyone collects a row of data.
+- **A term or number that's disputed, or missing from the glossary
+  entirely?** That's `ai-engineer`'s `metric-governance` skill, not a
+  one-off answer that leaves the definition undocumented for the next
+  person who asks.
 
 ## Output shape
 

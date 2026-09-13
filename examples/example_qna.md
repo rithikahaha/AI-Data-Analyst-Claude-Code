@@ -102,8 +102,35 @@ comparison; `ml/train_churn_model.py`'s classifier (built on engagement
 features, feature-adoption breadth, days since last login, not just plan/seat
 count) scored every active account.
 
-**Caveats:** the churn model's accuracy is modest (AUC ~0.65–0.67 depending on
-training run), good enough to rank relative risk and target outreach, not
+**Caveats:** the churn model's accuracy is modest (AUC 0.6675, exactly
+reproducible run to run since both the sample data and the model use fixed
+random seeds), good enough to rank relative risk and target outreach, not
 good enough to treat any single account's score as certain. The integration
 z-test is underpowered, so "not significant" here means "not yet confirmed,"
 not "proven to have no effect."
+
+---
+
+## 4. "How's onboarding doing?"
+
+*Agent: `analyst-lead` only, no specialist needed, the actual work here is
+scoping the question, not running one.*
+
+"How's onboarding doing" could mean the funnel completion rate, how long it
+takes users to activate, or something qualitative nobody's tracking in this
+warehouse. Per `analyst-lead`'s Ask phase, the fix isn't to guess or to stop
+and ask a clarifying question for something this cheap to just state plainly:
+
+**Interpreting this as the onboarding funnel (signup &rarr; completed
+onboarding &rarr; created a project), since that's what this warehouse tracks
+and it's the standard reading of "onboarding" at a product company. If you
+meant time-to-activate or something else, say so and I'll rerun it.**
+
+**71.6% of signups complete onboarding, and 61.9% of those go on to activate**
+(create a project), see example 2 above for the full funnel breakdown and
+where the actual leak is (after onboarding finishes, not during it).
+
+**Why this matters as its own example:** a vaguely-scoped question answered
+with the wrong interpretation, confidently, is worse than a slower answer,
+restating the interpretation up front means the stakeholder catches a
+mismatch in one sentence instead of after acting on the wrong number.

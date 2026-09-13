@@ -44,6 +44,27 @@ This is a strong answer specifically because it shows you didn't skip the
 "boring" phases (Prepare, Process) that people forget when they're excited
 about the AI part.
 
+## 1c. "That's how you'd answer one question. What about the rest of the job?"
+
+**What they're really asking:** Do you understand that being a data analyst
+is more than running queries when someone asks, or do you think the job ends
+at "here's your number."
+
+**Your answer:**
+"Answering one question well is maybe half of it. I also built the parts
+around that: `pipelines/monitor.py` runs on a schedule and checks whether the
+pipeline's quietly stalled or a metric has drifted, so a problem gets caught
+before a stakeholder asks and gets a wrong answer from it. Before I'd let
+anyone run an experiment, there's a feasibility check, required sample size
+against actual signup volume, that already caught one experiment idea in this
+project that would've taken over 500 weeks to reach significance on the
+traffic available, which is a decision to redesign it, not run it and hope.
+There's a changelog on the metrics glossary so a definition change is
+traceable instead of silent, a triage method for when more questions come in
+than I can answer at once, and a decision log that tracks whether a past
+recommendation actually got acted on. None of that shows up in a single
+query, but it's most of what the job actually is day to day."
+
 ## 2. "AI can write SQL and build dashboards. Why does this need you?"
 
 **What they're really asking:** This is the defining 2026 question. Do you
@@ -148,7 +169,7 @@ require it."
 
 All verified, re-checked before quoting.
 
-- 24 tests passing (`pytest`), CI on every push
+- 34 tests passing (`pytest`), CI on every push
 - 40/40 dbt checks passing, and its output matches the Python pipeline exactly
 - Churn model AUC: **0.6675**, exactly reproducible (fixed random seeds in
   both the data generation and the model). If asked "does it change when you
@@ -158,6 +179,10 @@ All verified, re-checked before quoting.
 - Net revenue retention: 108.5%
 - Starter churn 28.8% versus Enterprise 6.7%
 - Integration-adoption churn comparison: 17.5% versus 27.1%, p=0.075 (not significant)
+- Onboarding funnel: 71.6% of signups complete onboarding, 61.9% of those activate
+- A proposed onboarding-flow experiment would need ~580 weeks to reach a
+  conclusive sample size on this account base's signup volume, the feasibility
+  check that says "redesign this, don't run it," before any data is collected
 
 If asked for a number not on this list, say "let me check the repo and get
 back to you" rather than guessing. That's a stronger answer than a wrong

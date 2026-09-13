@@ -54,3 +54,13 @@ the last 30 days") unless the question asks for that explicitly.
 actually used the product's core feature. See
 `.claude/skills/funnel-analysis.md` for the full onboarding funnel definition
 (`signup` → `completed_onboarding` → `created_project`).
+
+## Changelog
+
+New entries and changes to an existing definition are logged here with a
+reason, per the `metric-governance` skill, so anyone can see not just what a
+metric means today but when and why it was pinned down that way.
+
+- **2026-09-13**: Added this changelog. All six definitions above were
+  correct as of the B2B SaaS domain swap and hadn't changed since; this just
+  makes future changes to any of them visible instead of a silent edit.

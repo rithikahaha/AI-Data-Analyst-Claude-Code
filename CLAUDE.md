@@ -14,7 +14,8 @@ answer backed by real SQL, statistics, a model, or a chart.
   governance), `qa-reviewer` (per-query QA + test suite/CI). Claude Code loads
   these automatically.
 - `.claude/skills/`, reusable analysis playbooks (cohort retention, growth
-  metrics, funnel analysis, anomaly detection, executive summary formatting). Invoke with
+  metrics, funnel analysis, anomaly detection, executive summary formatting,
+  experiment design, metric governance, request triage). Invoke with
   `/skill-name` or let an agent invoke them.
 - `connectors/warehouse.py`, single abstraction for talking to a warehouse. Defaults
   to the local SQLite sample warehouse at `data/sample_warehouse.db`; swap in a real
@@ -24,8 +25,12 @@ answer backed by real SQL, statistics, a model, or a chart.
   generates raw source extracts and loads/transforms them into the sample
   warehouse, with `pipelines/data_quality.py` checks on both sides of the
   transform, so the whole system works out of the box with no external credentials.
+  `pipelines/monitor.py` runs separately on a schedule
+  (`.github/workflows/monitor.yml`), watching the warehouse's steady state
+  over time instead of just validating one load.
 - `stats/`, `experiments/`, significance testing and A/B test readouts, used by
-  `data-scientist`.
+  `data-scientist`. `experiments/ab_test.py` also covers pre-experiment design
+  (required sample size, estimated weeks to reach it), not just post-hoc readouts.
 - `ml/`, churn model training and feature building, used by `data-scientist`.
 - `dbt/`, a parallel, tested semantic layer (see `dbt/README.md`) demonstrating
   the same transform/metric logic as governed dbt models; not wired into the
@@ -33,7 +38,11 @@ answer backed by real SQL, statistics, a model, or a chart.
 - `dashboard/`, the standing Streamlit app and its published-Artifact companion,
   owned by `data-visualizer`.
 - `rag/`, `knowledge/metrics_glossary.md`, grounds ambiguous metric definitions,
-  used by `ai-engineer`.
+  used by `ai-engineer`; the glossary's own `## Changelog` section tracks how
+  those definitions changed over time (`metric-governance` skill).
+- `knowledge/decision_log.md`, tracks whether a past recommendation from
+  `analyst-lead`'s Act phase actually got acted on and whether it worked,
+  closing the loop instead of only ever answering forward.
 - `infra/`, `docs/`, illustrative cloud IaC and architecture docs, owned by
   `data-platform-engineer`. Never applied against a live account from this repo.
 - `tests/`, `.github/workflows/ci.yml`, owned by `qa-reviewer`; run `pytest`

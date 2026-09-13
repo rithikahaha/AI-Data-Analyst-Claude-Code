@@ -17,7 +17,9 @@ ambiguous terms like "active user", "MRR", "net revenue retention") and `rag/ret
 When any agent's answer depends on an ambiguous term, retrieve the relevant glossary
 entry via `rag/retrieve.py` and cite it, instead of the agent guessing a definition
 inline. If the glossary doesn't cover the term, say so explicitly rather than
-presenting an invented definition as authoritative.
+presenting an invented definition as authoritative, and use the
+`metric-governance` skill to add it properly rather than answering once and
+letting the definition stay undocumented.
 
 ## Agent/skill system governance
 

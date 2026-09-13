@@ -36,6 +36,29 @@ def required_sample_size_per_group(
     return int(np.ceil(numerator / denominator))
 
 
+def estimated_weeks_to_reach_sample_size(
+    required_n_per_group: int,
+    weekly_eligible_units: float,
+    traffic_split: float = 0.5,
+) -> float:
+    """How many weeks a test needs to run to reach `required_n_per_group` per
+    arm, given how many eligible units (new accounts, active users) become
+    available per week and what share goes to each arm.
+
+    This is the check that happens *before* a single row of data is
+    collected: answers "should we even run this test, and for how long"
+    instead of only judging a result after the fact. A test that would need
+    18 months to reach power on the traffic available is a decision to
+    change the design (a bigger minimum detectable effect, a proxy metric
+    with more volume) or not run it, not something to discover after
+    running it for 2 weeks and reading an inconclusive result.
+    """
+    weekly_per_arm = weekly_eligible_units * traffic_split
+    if weekly_per_arm <= 0:
+        return float("inf")
+    return required_n_per_group / weekly_per_arm
+
+
 @dataclass
 class ABTestResult:
     control_rate: float
@@ -110,11 +133,42 @@ def check_guardrail(
 
 
 if __name__ == "__main__":
-    # Worked example: does adopting an integration correlate with an account
-    # sticking around, or does it just look that way in a raw comparison?
-    # Against the sample warehouse from scripts/export_raw_sources.py.
     from connectors.warehouse import run_query
 
+    # Worked example 1 (design, before collecting anything): would a
+    # randomized onboarding-flow test to cut Starter churn even be feasible
+    # on the traffic this account base gets, or is it a non-starter before a
+    # single account is enrolled?
+    baseline_churn = run_query(
+        "SELECT CAST(SUM(CASE WHEN status = 'churned' THEN 1 ELSE 0 END) AS FLOAT) "
+        "/ COUNT(*) AS rate FROM subscriptions"
+    )["rate"].iloc[0]
+    weekly_signups = run_query(
+        "SELECT COUNT(*) / (JULIANDAY(MAX(signed_up_date)) - JULIANDAY(MIN(signed_up_date))) * 7 AS n "
+        "FROM organizations"
+    )["n"].iloc[0]
+
+    minimum_detectable_effect = 0.05  # smallest churn reduction worth acting on
+    required_n = required_sample_size_per_group(baseline_churn, minimum_detectable_effect)
+    weeks_needed = estimated_weeks_to_reach_sample_size(required_n, weekly_signups)
+
+    print("Design check: is a randomized onboarding-flow test worth running at all?")
+    print(f"Current churn rate: {baseline_churn:.1%}; smallest reduction worth acting on: {minimum_detectable_effect:.0%} points")
+    print(f"Required sample size per arm: {required_n}")
+    print(f"New accounts arriving per week: {weekly_signups:.1f}")
+    print(f"Estimated weeks to reach that sample size: {weeks_needed:.1f}")
+    print(
+        "-> Too slow to justify running as designed; narrow the effect size or pick a "
+        "higher-volume proxy metric instead."
+        if weeks_needed > 26
+        else "-> Feasible within a reasonable test window; worth designing further (guardrails, randomization unit)."
+    )
+    print("\n" + "=" * 70 + "\n")
+
+    # Worked example 2 (readout, after the fact): does adopting an
+    # integration correlate with an account sticking around, or does it just
+    # look that way in a raw comparison? Against the sample warehouse from
+    # scripts/export_raw_sources.py.
     df = run_query(
         """
         WITH adopters AS (

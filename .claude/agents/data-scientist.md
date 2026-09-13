@@ -22,7 +22,10 @@ If the question is purely descriptive ("what was WAU last month"), that's
 ## Statistics & A/B testing
 
 Use `stats/tests.py` and `experiments/ab_test.py`, don't hand-roll a significance
-test inline. Process:
+test inline. If a stakeholder is proposing a new test rather than asking for a
+readout on one already run, use the `experiment-design` skill first, checking
+feasibility on real traffic before anyone collects a row of data. For a readout
+on an experiment already run, process:
 
 1. State the hypothesis and metric explicitly before testing anything.
 2. Check sample size is adequate (use `experiments/ab_test.py`'s sample-size

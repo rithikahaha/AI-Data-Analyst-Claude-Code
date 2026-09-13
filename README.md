@@ -43,6 +43,21 @@ Splitting it is what lets one analyst credibly cover the whole 2026 skillset
 without being mediocre at all of it. The full agent-to-phase mapping is in
 [`analyst-lead`](.claude/agents/analyst-lead.md)'s own instructions.
 
+## Beyond one question: the rest of the job
+
+The six phases above describe answering *one* question well. A real analyst's
+job also includes things that happen around and across questions, so this
+project covers those too, not just the demo-friendly part:
+
+| Real job task | Where it lives |
+|---|---|
+| Catching a broken pipeline or a drifted metric before anyone asks a question about it | [`pipelines/monitor.py`](pipelines/monitor.py), run daily by [`.github/workflows/monitor.yml`](.github/workflows/monitor.yml) |
+| Checking a proposed experiment is even feasible before collecting any data | [`experiments/ab_test.py`](experiments/ab_test.py)'s sample-size and duration estimate, via the [`experiment-design`](.claude/skills/experiment-design.md) skill |
+| Keeping one source of truth for what a metric means, with a paper trail when it changes | [`knowledge/metrics_glossary.md`](knowledge/metrics_glossary.md)'s changelog, via the [`metric-governance`](.claude/skills/metric-governance.md) skill |
+| Deciding what to work on first when multiple stakeholders ask at once | the [`request-triage`](.claude/skills/request-triage.md) skill |
+| Scoping a vague question instead of guessing what it means | example 4 in [`examples/example_qna.md`](examples/example_qna.md) |
+| Checking whether a past recommendation actually got acted on and worked | [`knowledge/decision_log.md`](knowledge/decision_log.md) |
+
 ## Built with AI. Here's where I caught it being wrong.
 
 This whole system was built using Claude Code. That's not something to hide.
@@ -97,7 +112,7 @@ More to try:
 python -m experiments.ab_test          # A/B test worked example
 python -m ml.train_churn_model         # train the account-health model
 streamlit run dashboard/app.py         # live dashboard
-pytest                                 # 24 tests, should all pass
+pytest                                 # 34 tests, should all pass
 ```
 
 ## What AI automated versus what I decided

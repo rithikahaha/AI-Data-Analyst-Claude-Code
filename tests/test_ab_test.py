@@ -1,4 +1,9 @@
-from experiments.ab_test import check_guardrail, required_sample_size_per_group, two_proportion_z_test
+from experiments.ab_test import (
+    check_guardrail,
+    estimated_weeks_to_reach_sample_size,
+    required_sample_size_per_group,
+    two_proportion_z_test,
+)
 
 
 def test_required_sample_size_increases_for_smaller_effects():
@@ -28,3 +33,19 @@ def test_guardrail_flags_regression_beyond_threshold():
 def test_guardrail_allows_small_regression():
     result = check_guardrail("support_tickets", control_value=100, treatment_value=98, max_acceptable_regression_pct=5.0)
     assert not result["guardrail_breached"]
+
+
+def test_estimated_weeks_scales_inversely_with_traffic():
+    slow = estimated_weeks_to_reach_sample_size(1000, weekly_eligible_units=10)
+    fast = estimated_weeks_to_reach_sample_size(1000, weekly_eligible_units=100)
+    assert fast < slow
+
+
+def test_estimated_weeks_is_infinite_with_no_traffic():
+    assert estimated_weeks_to_reach_sample_size(1000, weekly_eligible_units=0) == float("inf")
+
+
+def test_estimated_weeks_respects_traffic_split():
+    full_split = estimated_weeks_to_reach_sample_size(1000, weekly_eligible_units=100, traffic_split=1.0)
+    half_split = estimated_weeks_to_reach_sample_size(1000, weekly_eligible_units=100, traffic_split=0.5)
+    assert half_split == full_split * 2
