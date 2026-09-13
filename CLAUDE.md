@@ -7,7 +7,8 @@ answer backed by real SQL, statistics, a model, or a chart.
 
 ## How it fits together
 
-- `.claude/agents/`, one agent per real team role: `analyst-lead` (orchestrator),
+- `.claude/agents/`, one agent per specialty the 2026 data-analyst skillset now
+  covers, not seven separate hires: `analyst-lead` (orchestrator),
   `sql-engineer` (queries), `data-scientist` (stats/A-B testing/ML modeling),
   `data-platform-engineer` (pipelines/data quality/cloud/system design),
   `data-visualizer` (BI/dashboard), `ai-engineer` (RAG grounding + agent/skill

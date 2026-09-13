@@ -128,9 +128,14 @@ and what would you never?" Here's the honest split, using this exact project.
 | Built the dashboard | Whether the dashboard's chart order was actually correct (it wasn't, first try) |
 | Suggested the churn model features | Whether MLOps belonged in scope at all (it didn't) |
 
-## The team, if you want the detail
+## The specialties, if you want the detail
 
-| Agent | Role | Code |
+This isn't seven job openings, it's one analyst-driven system, `analyst-lead`,
+splitting the 2026 data-analyst skillset into seven specialties so each part
+gets done well instead of one prompt being mediocre at all of it. Same idea as
+the phase table above, just broken out by what each specialty actually touches:
+
+| Specialty | Covers | Code |
 |---|---|---|
 | [`analyst-lead`](.claude/agents/analyst-lead.md) | Routes the question, writes the final answer | n/a |
 | [`sql-engineer`](.claude/agents/sql-engineer.md) | Schema and queries | `connectors/warehouse.py` |
