@@ -10,7 +10,7 @@
 
 ## So what should the business do?
 
-Put customer-success outreach on the Starter accounts the churn model scores highest (Starter churn is 28.8% versus 6.7% for Enterprise). Treat the integration-adoption link as worth a real experiment, not a rollout: it came back at p=0.075, not proven. The data here is synthetic, so this shows the method, not a real company's result.
+In this sample company, customers on the cheapest plan cancel more than four times as often as those on the top plan (28.8% versus 6.7%). So the customer-success team should reach out first to the accounts the model rates most likely to cancel. One promising pattern, that customers who connect other tools stay longer, is not proven yet, so test it on a small group before changing anything. The data here is synthetic, so this shows the method, not a real company's result.
 
 ## See it work, right now
 
