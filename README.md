@@ -10,7 +10,7 @@
 
 ## So what should the business do?
 
-In this sample company, customers on the cheapest plan cancel more than four times as often as those on the top plan (28.8% versus 6.7%). So the customer-success team should reach out first to the accounts the model rates most likely to cancel. One promising pattern, that customers who connect other tools stay longer, is not proven yet, so test it on a small group before changing anything. The data here is synthetic, so this shows the method, not a real company's result.
+In this sample data, the cheapest plan loses customers over four times as fast as the top plan. Call the customers most likely to leave first. The data here is synthetic, so this shows the method, not a real company result.
 
 ## See it work, right now
 
