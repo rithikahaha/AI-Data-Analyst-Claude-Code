@@ -8,6 +8,10 @@
 > numbers, a chart, and honest caveats. No manual analysis, no clicking
 > through a BI tool.
 
+## So what should the business do?
+
+Put customer-success outreach on the Starter accounts the churn model scores highest (Starter churn is 28.8% versus 6.7% for Enterprise). Treat the integration-adoption link as worth a real experiment, not a rollout: it came back at p=0.075, not proven. The data here is synthetic, so this shows the method, not a real company's result.
+
 ## See it work, right now
 
 **Question:** *"Is product engagement growing or shrinking?"*
