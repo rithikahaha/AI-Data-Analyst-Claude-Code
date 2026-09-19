@@ -6,8 +6,11 @@ BigQuery via their SQLAlchemy dialects) to swap it in without touching any agent
 or skill.
 """
 
+import json
 import os
 import re
+import time
+from datetime import datetime, timezone
 from pathlib import Path
 
 import pandas as pd
@@ -25,7 +28,32 @@ DEFAULT_SQLITE_PATH = Path(__file__).resolve().parent.parent / "data" / "sample_
 
 _ALLOWED_STATEMENT = re.compile(r"^\s*(WITH|SELECT|EXPLAIN)\b", re.IGNORECASE)
 
+DEFAULT_QUERY_LOG_PATH = Path(__file__).resolve().parent.parent / "logs" / "queries.jsonl"
+
 _engine: Engine | None = None
+
+
+def _log_query(sql: str, status: str, duration_ms: float, rows: int | None = None, error: str | None = None) -> None:
+    """Append one JSON line per query so reliability/sli.py can compute
+    availability and latency from real traffic. Logging must never be the
+    reason a query fails, so any filesystem problem is swallowed.
+    """
+    record = {
+        "ts": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "status": status,
+        "duration_ms": round(duration_ms, 2),
+        "rows": rows,
+        "sql_preview": " ".join(sql.split())[:120],
+    }
+    if error:
+        record["error"] = error[:200]
+    path = Path(os.environ.get("QUERY_LOG_PATH", DEFAULT_QUERY_LOG_PATH))
+    try:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        with path.open("a", encoding="utf-8") as f:
+            f.write(json.dumps(record) + "\n")
+    except OSError:
+        pass
 
 
 def get_engine() -> Engine:
@@ -49,13 +77,21 @@ def run_query(sql: str) -> pd.DataFrame:
     never writes to the warehouse from an agent.
     """
     if not _ALLOWED_STATEMENT.match(sql):
+        _log_query(sql, "blocked", 0.0)
         raise ValueError(
             "Only read-only SELECT/WITH/EXPLAIN statements are allowed through "
             "connectors.warehouse.run_query()."
         )
-    engine = get_engine()
-    with engine.connect() as conn:
-        return pd.read_sql(text(sql), conn)
+    started = time.perf_counter()
+    try:
+        engine = get_engine()
+        with engine.connect() as conn:
+            df = pd.read_sql(text(sql), conn)
+    except Exception as exc:
+        _log_query(sql, "error", (time.perf_counter() - started) * 1000, error=str(exc))
+        raise
+    _log_query(sql, "ok", (time.perf_counter() - started) * 1000, rows=len(df))
+    return df
 
 
 def list_tables() -> list[str]:

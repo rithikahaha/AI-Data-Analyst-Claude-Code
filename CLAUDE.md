@@ -46,6 +46,11 @@ answer backed by real SQL, statistics, a model, or a chart.
   closing the loop instead of only ever answering forward.
 - `infra/`, `docs/`, illustrative cloud IaC and architecture docs, owned by
   `data-platform-engineer`. Never applied against a live account from this repo.
+- `reliability/`, `Dockerfile`, `docker-compose.yml`, `k8s/`,
+  `docs/reliability.md`, `docs/runbooks/`, `docs/security-rbac.md`, the SRE side,
+  owned by `data-platform-engineer`: query logging to SLIs/SLOs, a health check,
+  the container, an illustrative Kubernetes deployment, runbooks and a
+  postmortem. Every query is logged to `logs/queries.jsonl` (gitignored).
 - `tests/`, `.github/workflows/ci.yml`, owned by `qa-reviewer`; run `pytest`
   after any change to `connectors/`, `pipelines/`, `stats/`, or `ml/`.
 

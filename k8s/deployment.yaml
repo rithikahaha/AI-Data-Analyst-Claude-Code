@@ -1,0 +1,79 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ai-data-analyst-dashboard
+  labels:
+    app: ai-data-analyst-dashboard
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: ai-data-analyst-dashboard
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0   # never drop below the desired replica count mid-deploy
+      maxSurge: 1
+  template:
+    metadata:
+      labels:
+        app: ai-data-analyst-dashboard
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+      containers:
+        - name: dashboard
+          image: ai-data-analyst:local   # a real deploy pins a registry tag or digest
+          ports:
+            - containerPort: 8501
+          env:
+            - name: QUERY_LOG_PATH
+              value: /app/logs/queries.jsonl
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: warehouse-credentials   # read-only DB role, see docs/security-rbac.md
+                  key: database-url
+                  optional: true                # unset means the baked-in sample warehouse
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          # Readiness gates traffic. Liveness restarts a wedged container.
+          # They are different questions, so they are different probes.
+          readinessProbe:
+            httpGet:
+              path: /_stcore/health
+              port: 8501
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /_stcore/health
+              port: 8501
+            initialDelaySeconds: 30
+            periodSeconds: 20
+            failureThreshold: 3
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+          volumeMounts:
+            - name: logs
+              mountPath: /app/logs
+            - name: tmp
+              mountPath: /tmp
+            - name: streamlit-config
+              mountPath: /home/app/.streamlit
+      volumes:
+        - name: logs
+          emptyDir: {}
+        - name: tmp
+          emptyDir: {}
+        - name: streamlit-config
+          emptyDir: {}

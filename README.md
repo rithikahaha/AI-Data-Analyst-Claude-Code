@@ -58,6 +58,28 @@ project covers those too, not just the demo-friendly part:
 | Scoping a vague question instead of guessing what it means | example 4 in [`examples/example_qna.md`](examples/example_qna.md) |
 | Checking whether a past recommendation actually got acted on and worked | [`knowledge/decision_log.md`](knowledge/decision_log.md) |
 
+## Keeping it running: the reliability layer
+
+An analytics tool people rely on has to stay up and stay correct, so this
+project also covers the operations side: how it is built, deployed,
+monitored and recovered.
+
+| What | Where |
+|---|---|
+| Runs the same everywhere in a container (non-root, health-checked) | [`Dockerfile`](Dockerfile), [`docker-compose.yml`](docker-compose.yml) |
+| Automated pipeline: lint, tests, build the image, prove it starts healthy | [`.github/workflows/ci.yml`](.github/workflows/ci.yml) |
+| Every query logged; availability and speed measured against targets (SLIs and SLOs) | [`reliability/sli.py`](reliability/sli.py), [`docs/reliability.md`](docs/reliability.md) |
+| One-command "is it healthy?" check that CI and a scheduler can act on | [`reliability/healthcheck.py`](reliability/healthcheck.py) |
+| Deployment definition with probes, resource limits and autoscaling (illustrative, not applied) | [`k8s/`](k8s/) |
+| What to do when it breaks, and a written-up near miss | [`docs/runbooks/`](docs/runbooks/) |
+| Who and what can touch the data (least privilege) | [`docs/security-rbac.md`](docs/security-rbac.md) |
+
+```bash
+docker compose up                          # dashboard on http://localhost:8501
+docker compose run --rm healthcheck        # same health check CI uses
+python -m reliability.sli                  # availability and latency vs targets
+```
+
 ## Built with AI. Here's where I caught it being wrong.
 
 This whole system was built using Claude Code. That's not something to hide.

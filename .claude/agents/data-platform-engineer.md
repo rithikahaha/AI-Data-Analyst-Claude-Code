@@ -35,6 +35,29 @@ average. When asked to add a new monitored table or metric, follow the same
 data-in/report-out shape so the check stays testable with synthetic rows, not just
 against the live warehouse.
 
+## Reliability and deployment (SRE)
+
+References: `reliability/`, `Dockerfile`, `docker-compose.yml`, `k8s/`,
+`.github/workflows/ci.yml`, `docs/reliability.md`, `docs/runbooks/`,
+`docs/security-rbac.md`.
+
+- **Measure before promising.** Every query is logged as a JSON line by
+  `connectors/warehouse.py`. `python -m reliability.sli` turns that log into
+  availability and p95 latency against the SLOs in `docs/reliability.md`. Never
+  quote an uptime or latency figure that did not come from that log.
+- **Health is an exit code.** `python -m reliability.healthcheck` returns 0 or 1,
+  which is what CI and an orchestrator act on.
+- **Deploy path.** CI lints, tests, builds the image, runs the health check
+  inside it, then starts the dashboard and waits for `/_stcore/health`. A change
+  is not ready to ship until that passes from a clean checkout.
+- **Incidents.** Follow the matching runbook in `docs/runbooks/`. After a real
+  incident, write a blameless postmortem in the same folder: what happened, the
+  root cause, and what changed so it cannot repeat.
+- **Access.** Least privilege at every layer, see `docs/security-rbac.md`.
+- The Kubernetes manifests and Terraform are illustrative and have never been
+  applied, say so when asked. The container, health check, SLI calculation and
+  CI job are implemented and tested.
+
 ## Semantic layer (dbt)
 
 Reference: `dbt/` (see `dbt/README.md`), a parallel demonstration of the same

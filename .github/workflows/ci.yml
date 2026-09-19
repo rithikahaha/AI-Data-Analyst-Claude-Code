@@ -6,6 +6,16 @@ on:
   pull_request:
 
 jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install ruff
+      - run: ruff check .
+
   test:
     runs-on: ubuntu-latest
     steps:
@@ -14,6 +24,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+          cache: pip
 
       - name: Install dependencies
         run: pip install -r requirements.txt
@@ -25,3 +36,31 @@ jobs:
 
       - name: Run tests
         run: pytest -v
+
+  container:
+    # Build the image and prove it works before anything could deploy it:
+    # the health check passes inside the container, the app answers its own
+    # liveness endpoint, and the service level objectives hold.
+    runs-on: ubuntu-latest
+    needs: [lint, test]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build image
+        run: docker build -t ai-data-analyst:ci .
+
+      - name: Health check inside the container
+        run: docker run --rm ai-data-analyst:ci python -m reliability.healthcheck
+
+      - name: Start the dashboard and wait for it to report healthy
+        run: |
+          docker run -d --name dash -p 8501:8501 ai-data-analyst:ci
+          for i in $(seq 1 30); do
+            if curl -fsS http://localhost:8501/_stcore/health; then echo; echo "healthy after ${i}s"; exit 0; fi
+            sleep 1
+          done
+          echo "dashboard never became healthy"; docker logs dash; exit 1
+
+      - name: Print container logs on failure
+        if: failure()
+        run: docker logs dash || true

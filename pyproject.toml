@@ -1,0 +1,5 @@
+[tool.ruff.lint]
+# Real errors only (pyflakes + pycodestyle errors). Style opinions are not
+# worth failing a build over on a project this size.
+select = ["E", "F"]
+ignore = ["E501"]

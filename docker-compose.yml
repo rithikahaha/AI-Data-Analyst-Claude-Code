@@ -1,0 +1,28 @@
+# Local stand-in for a deployment environment: `docker compose up` runs the
+# dashboard, and `docker compose run --rm healthcheck` runs the same health
+# check CI uses against the same image.
+services:
+  dashboard:
+    build: .
+    ports:
+      - "8501:8501"
+    environment:
+      # Leave unset to use the baked-in sample warehouse. Point at a real
+      # database with a read-only role (see docs/security-rbac.md).
+      DATABASE_URL: ${DATABASE_URL:-}
+      QUERY_LOG_PATH: /app/logs/queries.jsonl
+    volumes:
+      - query-logs:/app/logs
+    restart: unless-stopped
+    read_only: true
+    tmpfs:
+      - /tmp
+      - /home/app/.streamlit
+
+  healthcheck:
+    build: .
+    command: ["python", "-m", "reliability.healthcheck"]
+    profiles: ["tools"]
+
+volumes:
+  query-logs:

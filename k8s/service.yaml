@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: ai-data-analyst-dashboard
+spec:
+  selector:
+    app: ai-data-analyst-dashboard
+  ports:
+    - port: 80
+      targetPort: 8501
