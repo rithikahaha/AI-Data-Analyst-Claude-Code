@@ -64,6 +64,13 @@ An analytics tool people rely on has to stay up and stay correct, so this
 project also covers the operations side: how it is built, deployed,
 monitored and recovered.
 
+I was new to DevOps when I added this, so I built it as a way to learn it. It
+comes with a from-scratch guide with exercises,
+[`docs/devops-from-scratch/`](docs/devops-from-scratch/README.md). The
+container, pipeline, health check and SLO calculation are built and tested.
+The Kubernetes and Terraform files are written but have never been run on a
+real cluster or cloud account.
+
 | What | Where |
 |---|---|
 | Runs the same everywhere in a container (non-root, health-checked) | [`Dockerfile`](Dockerfile), [`docker-compose.yml`](docker-compose.yml) |

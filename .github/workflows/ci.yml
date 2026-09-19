@@ -52,9 +52,15 @@ jobs:
       - name: Health check inside the container
         run: docker run --rm ai-data-analyst:ci python -m reliability.healthcheck
 
-      - name: Start the dashboard and wait for it to report healthy
+      - name: Start the dashboard hardened, and wait for it to report healthy
+        # Same restrictions as docker-compose.yml and k8s/deployment.yaml:
+        # read-only filesystem with small writable scratch areas. If the app
+        # secretly needs to write somewhere else, this is where it shows up.
         run: |
-          docker run -d --name dash -p 8501:8501 ai-data-analyst:ci
+          docker run -d --name dash -p 8501:8501 \
+            --read-only \
+            --tmpfs /tmp --tmpfs /home/app/.streamlit --tmpfs /app/logs \
+            ai-data-analyst:ci
           for i in $(seq 1 30); do
             if curl -fsS http://localhost:8501/_stcore/health; then echo; echo "healthy after ${i}s"; exit 0; fi
             sleep 1
