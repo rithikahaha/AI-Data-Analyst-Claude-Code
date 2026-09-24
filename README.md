@@ -62,6 +62,16 @@ project covers those too, not just the demo-friendly part:
 | Scoping a vague question instead of guessing what it means | example 4 in [`examples/example_qna.md`](examples/example_qna.md) |
 | Checking whether a past recommendation actually got acted on and worked | [`knowledge/decision_log.md`](knowledge/decision_log.md) |
 
+## Learn the whole project
+
+Two from-scratch guides, written for a beginner, each with exercises you run
+against this repo:
+
+- [The analytics side](docs/analytics-from-scratch/README.md): SQL, metrics,
+  statistics, the churn model, the dashboard, dbt and the agents.
+- [The DevOps and SRE side](docs/devops-from-scratch/README.md): containers,
+  CI/CD, monitoring, incidents, Kubernetes and cloud.
+
 ## Keeping it running: the reliability layer
 
 An analytics tool people rely on has to stay up and stay correct, so this

@@ -4,6 +4,8 @@ Written for someone who has never touched any of this. No jargon without an
 explanation first. Every chapter uses a real file from this repo, so you learn
 the idea and see it working in the same place.
 
+The analytics half of the project has its own guide: [The analytics side, from scratch](../analytics-from-scratch/README.md).
+
 ## How to use this
 
 For each chapter, do three things in order:
