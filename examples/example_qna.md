@@ -102,9 +102,9 @@ comparison; `ml/train_churn_model.py`'s classifier (built on engagement
 features, feature-adoption breadth, days since last login, not just plan/seat
 count) scored every active account.
 
-**Caveats:** the churn model's accuracy is modest (AUC 0.6675, exactly
-reproducible run to run since both the sample data and the model use fixed
-random seeds), good enough to rank relative risk and target outreach, not
+**Caveats:** the churn model's accuracy is modest (AUC 0.6675 on the
+fixed train/test split, and that number is fragile: other splits give roughly
+0.57 to 0.69, because the test set only has 23 real churners), good enough to rank relative risk and target outreach, not
 good enough to treat any single account's score as certain. The integration
 z-test is underpowered, so "not significant" here means "not yet confirmed,"
 not "proven to have no effect."

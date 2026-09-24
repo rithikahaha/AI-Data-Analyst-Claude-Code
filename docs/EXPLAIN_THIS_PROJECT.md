@@ -169,12 +169,16 @@ require it."
 
 All verified, re-checked before quoting.
 
-- 34 tests passing (`pytest`), CI on every push
-- 40/40 dbt checks passing, and its output matches the Python pipeline exactly
-- Churn model AUC: **0.6675**, exactly reproducible (fixed random seeds in
-  both the data generation and the model). If asked "does it change when you
-  retrain," the honest answer is no, and that's deliberate. Reproducibility
-  is worth more here than pretending each run is a fresh discovery.
+- 48 tests passing (`pytest`), CI on every push
+- 40 of 40 dbt steps pass, and 28 of those are data tests (the rest are
+  loading inputs and building models). Its NRR and weekly active users match
+  the Python pipeline. Say "28 data tests", not "40 checks".
+- Churn model AUC: **0.6675**. It reproduces exactly (fixed random seeds), but
+  it is fragile: only 23 churners are in the test set, and other train/test
+  splits give AUC between about 0.57 and 0.69. It flagged 11 accounts and
+  caught 5 of the 23 real churners. Say "about 0.6 to 0.7, a rough way to rank
+  accounts, not a prediction", and know that the features may leak (see the
+  analytics guide, chapter 7).
 - WAU: 234 to 411 over 26 weeks (up 75.6%)
 - Net revenue retention: 108.5%
 - Starter churn 28.8% versus Enterprise 6.7%

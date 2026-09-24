@@ -155,7 +155,7 @@ More to try:
 python -m experiments.ab_test          # A/B test worked example
 python -m ml.train_churn_model         # train the account-health model
 streamlit run dashboard/app.py         # live dashboard
-pytest                                 # 34 tests, should all pass
+pytest                                 # 48 tests, should all pass
 ```
 
 ## What AI automated versus what I decided
@@ -188,7 +188,7 @@ the phase table above, just broken out by what each specialty actually touches:
 | [`ai-engineer`](.claude/agents/ai-engineer.md) | Grounds fuzzy terms, agent quality | `rag/`, `knowledge/`, `evals/` |
 | [`qa-reviewer`](.claude/agents/qa-reviewer.md) | Sanity checks, tests, CI | `tests/`, `.github/` |
 
-Also in here: [`dbt/`](dbt/) (a tested semantic layer, 40/40 checks passing),
+Also in here: [`dbt/`](dbt/) (a tested semantic layer, 28 data tests, all 40 dbt steps passing),
 [`infra/`](infra/) (illustrative AWS/GCP/Azure Terraform, never applied to a
 real account), and [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) (how this
 would scale).

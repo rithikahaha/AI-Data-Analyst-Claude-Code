@@ -38,6 +38,8 @@ dbt build                              # seed + run + test in one command
 
 Builds into a local DuckDB file at `data/analytics.duckdb`, no external
 warehouse or credentials needed. `dbt build` seeded, ran, and tested cleanly
-(40/40 checks) against this repo's sample data, and its `fct_account_mrr` and
-`fct_onboarding_funnel` outputs match `dashboard/queries.py`'s Python-computed
-numbers exactly, the same transform, expressed two ways, agreeing.
+(all 40 steps pass: 4 seeds, 8 models and 28 data tests) against this repo's
+sample data, and its `fct_account_mrr` and `fct_onboarding_funnel` outputs match
+`dashboard/queries.py`'s Python-computed numbers, the same transform, expressed
+two ways, agreeing. One presentation difference: dbt's weekly-active-users table
+keeps the current partial week, and the dashboard drops it.
